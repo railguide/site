@@ -1,0 +1,54 @@
+{
+  "name": "Rail Guide",
+  "short_name": "Rail Guide",
+  "description": "Rail maps",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#0d0d0d",
+  "background_color": "#ffffff",
+  "dir": "ltr",
+  "lang": "en-US",
+  "icons": [
+    {
+      "src": "images/manifest/48.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    },
+    {
+      "src": "images/manifest/72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "images/manifest/96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "images/manifest/144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "images/manifest/168.png",
+      "sizes": "168x168",
+      "type": "image/png"
+    },
+    {
+      "src": "images/manifest/192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "images/manifest/256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "images/manifest/512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
