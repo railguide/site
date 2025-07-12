@@ -380,21 +380,6 @@
       }
   }
 
-        function updateLocationDisplayVisibility() {
-      var mobileDisplay = document.getElementById('show-latitude-and-longitude-mob');
-      var desktopDisplay = document.getElementById('show-latitude-and-longitude');
-      if (window.innerWidth <= 915) {
-        if (mobileDisplay) mobileDisplay.style.display = '';
-        if (desktopDisplay) desktopDisplay.style.display = 'none';
-      } else {
-        if (mobileDisplay) mobileDisplay.style.display = 'none';
-        if (desktopDisplay) desktopDisplay.style.display = '';
-      }
-    }
-    window.addEventListener('resize', updateLocationDisplayVisibility);
-    window.addEventListener('DOMContentLoaded', updateLocationDisplayVisibility);
-    window.addEventListener('load', updateLocationDisplayVisibility);
-
     let selectedPreConfigData = 1 === window.location.href.split("#").length ? getRandomValueFromArray(preInitDataConfig) : {
             styleNumber: 0,
             zoomLevel: data.zoom,
