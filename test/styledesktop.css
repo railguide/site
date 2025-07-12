@@ -100,7 +100,7 @@ div {
     flex-direction: column;
 }
  .my-custom-controls .btn{
-    background-color: #010180;
+    background-color: #4859B6;
      color:#fff;
      width:95%;
      padding: 0;
@@ -177,7 +177,7 @@ div {
 
 .my-custom-controls-mob div .btn {
     border-radius: 32px;
-    background-color: #010180;
+    background-color: #4859B6;
     color: #fff;
     width: 60px;
     height: 60px;
@@ -287,7 +287,7 @@ div {
      
      .my-custom-controls-mob div .btn{
          border-radius: 32px;
-         background-color: #010180;
+         background-color: #4859B6;
          color: #fff;
          width: 60px;
          height: 60px;
@@ -674,7 +674,7 @@ div {
 }
  .mobile_landscape .my-custom-controls-mob div .btn{
      border-radius: 32px;
-     background-color: #010180;
+     background-color: #4859B6;
      color: #fff;
      width: 33px;
      height: 33px;
@@ -778,7 +778,7 @@ div {
 }
  .mobile_landscape .my-custom-controls-mob div .btn{
      border-radius: 32px;
-     background-color: #010180;
+     background-color: #4859B6;
      color: #fff;
      width: 33px;
      height: 33px;
@@ -859,7 +859,7 @@ div {
     text-align: center;
 }
  .tablet_portrait .my-custom-controls-mob div .btn{
-    background-color: #010180;
+    background-color: #4859B6;
     color:#fff;
     /* padding: 0;
      */
@@ -880,7 +880,7 @@ div {
 }
  .tablet_portrait .my-custom-controls-mob div .btn{
      border-radius: 32px;
-     background-color: #010180;
+     background-color: #4859B6;
      color: #fff;
      width: 60px;
      height: 60px;
