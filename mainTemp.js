@@ -351,19 +351,35 @@
             });*/
         }
 
-        showLatitudeAndLongitudeAndZoomLevel ( center ) {
-            void 0 === center && ( center =  [ this.map.getCenter().lng, this.map.getCenter().lat ]);
-            let showLongitudeLabelElement = document.querySelector("#show-latitude-and-longitude #show-longitude-label"),
-            showLatitudeLabelElement = document.querySelector("#show-latitude-and-longitude #show-latitude-label"),
-            showZoomLevelLabelElement = document.querySelector("#show-latitude-and-longitude #show-zoom-level-label");
 
-            null === showLongitudeLabelElement || ( showLongitudeLabelElement.innerHTML = Array.isArray(center) ? " " + Number(center[0]).toFixed(3) + " " : "" );
+        showLatitudeAndLongitudeAndZoomLevel(center) {
+      void 0 === center && (center = [this.map.getCenter().lng, this.map.getCenter().lat]);
+      // Desktop
+      let showLongitudeLabelElement = document.querySelector("#show-latitude-and-longitude #show-longitude-label"),
+          showLatitudeLabelElement = document.querySelector("#show-latitude-and-longitude #show-latitude-label"),
+          showZoomLevelLabelElement = document.querySelector("#show-latitude-and-longitude #show-zoom-level-label");
 
-            null === showLatitudeLabelElement || ( showLatitudeLabelElement.innerHTML = Array.isArray(center) ? " " + Number(center[1]).toFixed(3) + " " : "" );
-            null === showZoomLevelLabelElement || ( showZoomLevelLabelElement.innerHTML = " z" + (Math.round(this.map.getZoom() * 100) / 100) );
-        };
+      if (showLongitudeLabelElement)
+          showLongitudeLabelElement.innerHTML = Array.isArray(center) ? " " + Number(center[0]).toFixed(3) + " " : "";
+      if (showLatitudeLabelElement)
+          showLatitudeLabelElement.innerHTML = Array.isArray(center) ? " " + Number(center[1]).toFixed(3) + " " : "";
+      if (showZoomLevelLabelElement)
+          showZoomLevelLabelElement.innerHTML = " z" + (Math.round(this.map.getZoom() * 100) / 100);
 
-    } 
+      // Mobile
+      if (document.body.clientWidth <= 915) {
+          let showLongitudeLabelMob = document.querySelector("#show-latitude-and-longitude-mob #show-longitude-label-mob"),
+              showLatitudeLabelMob = document.querySelector("#show-latitude-and-longitude-mob #show-latitude-label-mob"),
+              showZoomLevelLabelMob = document.querySelector("#show-latitude-and-longitude-mob #show-zoom-level-label-mob");
+
+          if (showLongitudeLabelMob)
+              showLongitudeLabelMob.innerHTML = Array.isArray(center) ? " " + Number(center[0]).toFixed(3) + " " : "";
+          if (showLatitudeLabelMob)
+              showLatitudeLabelMob.innerHTML = Array.isArray(center) ? " " + Number(center[1]).toFixed(3) + " " : "";
+          if (showZoomLevelLabelMob)
+              showZoomLevelLabelMob.innerHTML = " z" + (Math.round(this.map.getZoom() * 100) / 100);
+      }
+  }
 
     let selectedPreConfigData = 1 === window.location.href.split("#").length ? getRandomValueFromArray(preInitDataConfig) : {
             styleNumber: 0,
