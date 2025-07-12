@@ -351,6 +351,7 @@
             });*/
         }
 
+
         showLatitudeAndLongitudeAndZoomLevel(center) {
       void 0 === center && (center = [this.map.getCenter().lng, this.map.getCenter().lat]);
       // Desktop
