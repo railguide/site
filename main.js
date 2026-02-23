@@ -131,9 +131,9 @@
                 localGeocoder: coordinatesGeocoder,
                 mapboxgl: window.mapboxgl,
                 limit: 8,
-                // rg fix
+                minLength: 4,  /* autocomplete starts only after 4 characters */
+                countries: "us,ca,mx",  /* limit results to US, Canada, Mexico */
                 placeholder: "Search/Coordinates"
-                // rg fix end
             });
 
             this.mapScale = new mapboxgl.ScaleControl({
@@ -689,3 +689,4 @@
     window.addEventListener("resize", positionDesktopSuggestionsBox);
     window.addEventListener("load", positionDesktopSuggestionsBox);
     window.addEventListener("DOMContentLoaded", positionDesktopSuggestionsBox);
+
