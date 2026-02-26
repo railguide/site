@@ -6,7 +6,7 @@
         a: ["America", "Asia", "Africa", "America", "Asia", "Africa"]
     },
     data = {
-        countries:["Canada", "US"],
+        countries:["Canada", "US", "Mexico"],
         /*style:[
             "m729/cjipjz6au358b2sukzcojfkae",
             "m729/cjipkyug036382rrpvvrig36o"
@@ -58,6 +58,35 @@
     function getRandomValueFromArray ( array ) {
         return array[Math.floor(Math.random() * array.length)]
     }
+
+    function escapeHtml ( text ) {
+        var div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    /** Step 13: Build popup HTML from layer data fields (extensible; some as links). Add to POPUP_FIELD_KEYS to show more. */
+    /*var POPUP_FIELD_KEYS = ["rr_full", "classic_full", "rg_name", "sub_title", "rg_desc"];
+    function buildPopupHtml ( properties ) {
+        if (!properties) return "";
+        var lines = [];
+        var seen = {};
+        for (var i = 0; i < POPUP_FIELD_KEYS.length; i++) {
+            var key = POPUP_FIELD_KEYS[i];
+            var val = properties[key];
+            if (val == null || val === "" || seen[key]) continue;
+            var s = String(val).trim();
+            if (!s) continue;
+            seen[key] = true;
+            if (/^https?:\/\//i.test(s) || /^www\./i.test(s)) {
+                var href = /^https?:\/\//i.test(s) ? s : "https://" + s;
+                lines.push("<a href=\"" + escapeHtml(href) + "\" target=\"_blank\" rel=\"noopener\">" + escapeHtml(s) + "</a>");
+            } else {
+                lines.push(escapeHtml(s));
+            }
+        }
+        return lines.join("<br>") || "";
+    }*/
 
     /** 
      * Given a query in the form "lng, lat" or "lat, lng"
@@ -137,7 +166,7 @@
             });
 
             this.mapScale = new mapboxgl.ScaleControl({
-                maxWidth: 80,
+                maxWidth: 125,
                 unit: "imperial"
             });
             
@@ -184,7 +213,7 @@
 
             this.moveToNorth = function () {
                 base.map.panTo(data.north_coords);
-                document.querySelector(".my-custom-controls-mob-north").classList.add("hide");
+                // document.querySelector(".my-custom-controls-mob-north").classList.add("hide");  /* mobile view commented out */
                 window.setTimeout(function () {
                     check_for_north = true;
                 }, 2000);
@@ -217,11 +246,14 @@
 
             document.getElementById("custom-map-compass-placeholder").appendChild((new window.mapboxgl.NavigationControl({showCompass: true, showZoom: false})).onAdd(this.map));
 
-            document.getElementById("custom-map-compass-placeholder-mb").appendChild((new window.mapboxgl.NavigationControl({showCompass: true, showZoom: false})).onAdd(this.map));
+            /* Mobile/tablet compass placeholders - commented out */
+            // document.getElementById("custom-map-compass-placeholder-mb").appendChild((new window.mapboxgl.NavigationControl({showCompass: true, showZoom: false})).onAdd(this.map));
+            // document.getElementById("custom-map-compass-placeholder-mb-sm").appendChild((new window.mapboxgl.NavigationControl({showCompass: true, showZoom: false})).onAdd(this.map));
 
-            document.getElementById("custom-map-compass-placeholder-mb-sm").appendChild((new window.mapboxgl.NavigationControl({showCompass: true, showZoom: false})).onAdd(this.map));
-
-            this.map.addControl(new window.mapboxgl.AttributionControl(), "bottom-left");
+            /* Attribution: © Rail Guide as link to home */
+            this.map.addControl(new window.mapboxgl.AttributionControl({
+                customAttribution: '<a href="index.html">© Rail Guide</a>'
+            }), "bottom-left");
 
             /*const scale = new mapboxgl.ScaleControl({
             maxWidth: 80,
@@ -285,6 +317,84 @@
                 base.showLatitudeAndLongitudeAndZoomLevel();
                 /*base.updateUrlPath();*/
             });
+
+            /* Hover tooltip + pointer cursor on map icons/lines (like british_railways) */
+            /*var hoverTooltip = document.getElementById("map-hover-tooltip");
+            if (hoverTooltip) {
+                this.map.on("mousemove", function (e) {
+                    var features = base.map.queryRenderedFeatures(e.point);
+                    var label = "";
+                    for (var i = 0; i < features.length; i++) {
+                        var p = features[i].properties;
+                        if (!p) continue;
+                        label = p.rr_full || p.classic_full || p.rg_name || p.sub_title || "";
+                        if (label && String(label).trim()) break;
+                    }
+                    if (label && String(label).trim()) {
+                        base.map.getCanvas().style.cursor = "pointer";
+                        hoverTooltip.textContent = String(label).trim();
+                        hoverTooltip.classList.add("is-visible");
+                        var mapRect = base.map.getContainer().getBoundingClientRect();
+                        hoverTooltip.style.left = (mapRect.left + e.point.x + 10) + "px";
+                        hoverTooltip.style.top = (mapRect.top + e.point.y + 10) + "px";
+                        hoverTooltip.setAttribute("aria-hidden", "false");
+                    } else {
+                        base.map.getCanvas().style.cursor = "";
+                        hoverTooltip.classList.remove("is-visible");
+                        hoverTooltip.setAttribute("aria-hidden", "true");
+                    }
+                });
+                this.map.on("mouseleave", function () {
+                    base.map.getCanvas().style.cursor = "";
+                    hoverTooltip.classList.remove("is-visible");
+                    hoverTooltip.setAttribute("aria-hidden", "true");
+                });
+            }*/
+
+            /* Click/tap: popup above feature, stays until X or click outside (per client) */
+            var featurePopup = null;
+            this.map.on("click", function (e) {
+                var features = base.map.queryRenderedFeatures(e.point);
+                var label = "";
+                var feature = null;
+                for (var i = 0; i < features.length; i++) {
+                    var p = features[i].properties;
+                    if (!p) continue;
+                    label = p.rr_full || p.rg_desc || p.rg_name || p.sub_title || "";
+                    if (label && String(label).trim()) {
+                        feature = features[i];
+                        break;
+                    }
+                }
+                if (feature && label && String(label).trim()) {
+                    if (featurePopup) featurePopup.remove();
+                    var popupBody = buildPopupHtml(feature.properties);
+                    if (!popupBody) popupBody = escapeHtml(String(label).trim());
+                    featurePopup = new window.mapboxgl.Popup({
+                        closeButton: true,
+                        closeOnClick: true
+                    })
+                        .setLngLat(e.lngLat)
+                        .setHTML("<div class=\"map-feature-popup-content\">" + popupBody + "</div>")
+                        .addTo(base.map);
+                    featurePopup.on("close", function () {
+                        featurePopup = null;
+                    });
+                    /* Step 12: pan map if popup would be cut off at top (like Railview) */
+                    (function checkPopupPosition () {
+                        var popupEl = featurePopup && featurePopup.getElement && featurePopup.getElement();
+                        if (!popupEl) {
+                            window.setTimeout(checkPopupPosition, 50);
+                            return;
+                        }
+                        var rect = popupEl.getBoundingClientRect();
+                        var minTop = 55;
+                        if (rect.top < minTop) {
+                            base.map.panBy([0, rect.top - minTop], { duration: 200 });
+                        }
+                    })();
+                }
+            });
         }
 
         removeEvents () {}
@@ -302,19 +412,16 @@
         }*/
 
         addSearchBox () {
-            if ( document.body.clientWidth <= 915 ) {
-                document.getElementById("dtmob").innerHTML = "";
-                document.getElementById("dt").innerHTML = "";
-                document.getElementById("dtmob").appendChild(this.mapgeocoder.onAdd(this.map));
-                //var parenNode = $(".mapboxgl-ctrl-attrib");
-                //$(".mapboxgl-ctrl-attrib").insertAfter($(parenNode).next());
-            }
-
-            else if ( document.body.clientWidth > 915 ) {
-                document.getElementById("dtmob").innerHTML = "";
-                document.getElementById("dt").innerHTML = "";
-                document.getElementById("dt").appendChild(this.mapgeocoder.onAdd(this.map));
-            }
+            /* Mobile view commented out - always use desktop search bar */
+            // if ( document.body.clientWidth <= 915 ) {
+            //     document.getElementById("dtmob").innerHTML = "";
+            //     document.getElementById("dt").innerHTML = "";
+            //     document.getElementById("dtmob").appendChild(this.mapgeocoder.onAdd(this.map));
+            // }
+            // else if ( document.body.clientWidth > 915 ) {
+            document.getElementById("dt").innerHTML = "";
+            document.getElementById("dt").appendChild(this.mapgeocoder.onAdd(this.map));
+            // }
         }
 
         fitContentByDevice ( checkTabletView ) {
@@ -357,9 +464,9 @@
             showLatitudeLabelElement = document.querySelector("#show-latitude-and-longitude #show-latitude-label"),
             showZoomLevelLabelElement = document.querySelector("#show-latitude-and-longitude #show-zoom-level-label");
 
-            null === showLongitudeLabelElement || ( showLongitudeLabelElement.innerHTML = Array.isArray(center) ? " " + Number(center[0]).toFixed(3) + " " : "" );
+            null === showLongitudeLabelElement || ( showLongitudeLabelElement.innerHTML = Array.isArray(center) ? Number(center[0]).toFixed(3) : "" );
 
-            null === showLatitudeLabelElement || ( showLatitudeLabelElement.innerHTML = Array.isArray(center) ? " " + Number(center[1]).toFixed(3) + " " : "" );
+            null === showLatitudeLabelElement || ( showLatitudeLabelElement.innerHTML = Array.isArray(center) ? Number(center[1]).toFixed(3) : "" );
             null === showZoomLevelLabelElement || ( showZoomLevelLabelElement.innerHTML = " z" + (Math.round(this.map.getZoom() * 100) / 100) );
         };
 
@@ -372,6 +479,68 @@
         },
     currentActiveMap = new handleMapPrcoessCreation( selectedPreConfigData );
 
+    /* Copy coordinates button: custom tooltip (instant), copy lat, long, show "Coordinates copied" */
+    (function setupCopyCoordinates () {
+        var btn = document.getElementById("copy-coordinates-btn");
+        var bubble = document.getElementById("coordinates-copied-bubble");
+        var tooltip = document.getElementById("copy-coordinates-tooltip");
+        if (!btn || !bubble) return;
+        if (tooltip) {
+            btn.addEventListener("mouseenter", function () {
+                var r = btn.getBoundingClientRect();
+                tooltip.style.left = (r.left + r.width / 2) + "px";
+                tooltip.style.top = (r.top - 4) + "px";
+                tooltip.style.visibility = "visible";
+                tooltip.style.opacity = "1";
+                tooltip.classList.add("is-visible");
+                tooltip.setAttribute("aria-hidden", "false");
+            });
+            btn.addEventListener("mouseleave", function () {
+                tooltip.style.visibility = "";
+                tooltip.style.opacity = "";
+                tooltip.classList.remove("is-visible");
+                tooltip.setAttribute("aria-hidden", "true");
+            });
+        }
+        btn.addEventListener("click", function () {
+            if (tooltip) {
+                tooltip.style.visibility = "";
+                tooltip.style.opacity = "";
+                tooltip.classList.remove("is-visible");
+                tooltip.setAttribute("aria-hidden", "true");
+            }
+            var center = currentActiveMap.map.getCenter();
+            var lat = Number(center.lat).toFixed(3);
+            var lng = Number(center.lng).toFixed(3);
+            var text = lat + ", " + lng;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function () {
+                    bubble.classList.add("is-visible");
+                    window.clearTimeout(window._copyBubbleTimeout);
+                    window._copyBubbleTimeout = window.setTimeout(function () {
+                        bubble.classList.remove("is-visible");
+                    }, 1200);
+                });
+            } else {
+                var ta = document.createElement("textarea");
+                ta.value = text;
+                ta.style.position = "fixed";
+                ta.style.left = "-9999px";
+                document.body.appendChild(ta);
+                ta.select();
+                try {
+                    document.execCommand("copy");
+                    bubble.classList.add("is-visible");
+                    window.clearTimeout(window._copyBubbleTimeout);
+                    window._copyBubbleTimeout = window.setTimeout(function () {
+                        bubble.classList.remove("is-visible");
+                    }, 1200);
+                } catch (e) {}
+                document.body.removeChild(ta);
+            }
+        });
+    })();
+
     function updateDesktopHighlightedMapMenu ( styleNumber ) {
         if ( void 0 === styleNumber )
             return;
@@ -383,16 +552,16 @@
         });
     }
 
-    function updateMobileHighlightedMapMenu ( styleNumber ) {
-        if ( void 0 === styleNumber )
-            return;
-
-        let elements = document.querySelectorAll("#ul2 li");
-        null === elements || elements.forEach(function ( element ) {
-            let styleId = element.getAttribute("style-id");
-            styleNumber == styleId ? element.classList.add("liactive") : element.classList.remove("liactive")
-        });
-    }
+    /* Mobile map menu - commented out */
+    // function updateMobileHighlightedMapMenu ( styleNumber ) {
+    //     if ( void 0 === styleNumber )
+    //         return;
+    //     let elements = document.querySelectorAll("#ul2 li");
+    //     null === elements || elements.forEach(function ( element ) {
+    //         let styleId = element.getAttribute("style-id");
+    //         styleNumber == styleId ? element.classList.add("liactive") : element.classList.remove("liactive")
+    //     });
+    // }
 
     
     function onUpdateDesktopHighlightedMapMenu () {
@@ -403,13 +572,12 @@
     window.addEventListener("load", onUpdateDesktopHighlightedMapMenu);
     onUpdateDesktopHighlightedMapMenu();
 
-    function onUpdateMobileHighlightedMapMenu () {
-        updateMobileHighlightedMapMenu(selectedPreConfigData.styleNumber);
-    }
-
-    window.addEventListener("DOMContentLoaded", onUpdateMobileHighlightedMapMenu);
-    window.addEventListener("load", onUpdateMobileHighlightedMapMenu);
-    onUpdateMobileHighlightedMapMenu();
+    // function onUpdateMobileHighlightedMapMenu () {
+    //     updateMobileHighlightedMapMenu(selectedPreConfigData.styleNumber);
+    // }
+    // window.addEventListener("DOMContentLoaded", onUpdateMobileHighlightedMapMenu);
+    // window.addEventListener("load", onUpdateMobileHighlightedMapMenu);
+    // onUpdateMobileHighlightedMapMenu();
 
     // class MyCustomControl {
     //   onAdd(map){
@@ -472,12 +640,13 @@
             this.classList.add("liactive");
         });
 
-        $("#ul2 li").on("click", function(e){
-            $(".liactive").each(function( index ) {
-                this.classList.remove("liactive");
-            });
-            this.classList.add("liactive");
-        });
+        /* Mobile ul2 - commented out */
+        // $("#ul2 li").on("click", function(e){
+        //     $(".liactive").each(function( index ) {
+        //         this.classList.remove("liactive");
+        //     });
+        //     this.classList.add("liactive");
+        // });
 
         $(document).on("click", function(e){
             let target = $(e.target)[0],
@@ -493,7 +662,7 @@
             openul2 = true;
 
             $("#ul").css({"display": "none"});
-            $("#ul2").css({"display": "none"});
+            // $("#ul2").css({"display": "none"});  /* mobile commented out */
         });
     });
 
@@ -570,7 +739,8 @@
     window.addEventListener("resize", positionDesktopMapList);
     window.addEventListener("DOMContentLoaded", positionDesktopMapList);
 
-    //Position Maps list
+    //Position Maps list (mobile) - commented out; mobile view disabled
+    /*
     function positionMobileMapList () {
         try {
 
@@ -603,6 +773,7 @@
     window.addEventListener("load", positionMobileMapList);
     window.addEventListener("resize", positionMobileMapList);
     window.addEventListener("DOMContentLoaded", positionMobileMapList);
+    */
 
     // Initialize deferredPrompt for use later to show browser install prompt.
     let deferredPrompt;
@@ -652,26 +823,52 @@
     window.addEventListener("DOMContentLoaded", centerTopbarAds);
 
     function positionScaleBar () {
-        let scale = document.querySelector(".mapboxgl-ctrl-scale"),
-        latitudeAndLongitude = document.getElementById("show-latitude-and-longitude");
+        var scale = document.querySelector(".mapboxgl-ctrl-scale");
+        var attribution = document.querySelector(".mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-attrib, .mapboxgl-ctrl.mapboxgl-ctrl-attrib");
+        var bottomLeft = document.querySelector(".mapboxgl-ctrl-bottom-left");
 
-        if ( null === scale || null === latitudeAndLongitude )
-            return void 0;
+        if (!scale || !bottomLeft) return;
 
+        var bottom = getComputedStyle(bottomLeft).getPropertyValue("bottom");
         scale.style.position = "fixed";
         scale.style.top = "auto";
-        scale.style.left = "auto";
-        scale.style.bottom = getComputedStyle(latitudeAndLongitude).getPropertyValue("bottom");
-        scale.style.right = "calc(" + getComputedStyle(latitudeAndLongitude).getPropertyValue("right") + " + " + latitudeAndLongitude.getBoundingClientRect().width + "px )";
-        scale.style.marginRight = "6px";
+        scale.style.bottom = bottom;
+        scale.style.right = "auto";
+        scale.style.marginRight = "0";
+
+        var rightEdge = 0;
+        if (attribution) {
+            var ar = attribution.getBoundingClientRect();
+            rightEdge = ar.right;
+            var links = attribution.querySelectorAll("a");
+            for (var i = 0; i < links.length; i++) {
+                var lr = links[i].getBoundingClientRect();
+                if (lr.right > rightEdge) rightEdge = lr.right;
+            }
+        }
+        if (rightEdge <= 0) {
+            var bl = bottomLeft.getBoundingClientRect();
+            rightEdge = bl.right;
+        }
+        scale.style.left = (rightEdge + 12) + "px";
+    }
+
+    function runPositionScaleBarWhenReady () {
+        positionScaleBar();
+        requestAnimationFrame(function () {
+            requestAnimationFrame(positionScaleBar);
+        });
     }
 
     window.addEventListener("resize", positionScaleBar);
-    window.addEventListener("load", positionScaleBar);
-    window.addEventListener("DOMContentLoaded", positionScaleBar);
-
-
-
+    window.addEventListener("load", function () {
+        runPositionScaleBarWhenReady();
+        setTimeout(positionScaleBar, 150);
+        setTimeout(positionScaleBar, 500);
+    });
+    window.addEventListener("DOMContentLoaded", function () {
+        runPositionScaleBarWhenReady();
+    });
 
 
     function positionDesktopSuggestionsBox () {
@@ -689,4 +886,3 @@
     window.addEventListener("resize", positionDesktopSuggestionsBox);
     window.addEventListener("load", positionDesktopSuggestionsBox);
     window.addEventListener("DOMContentLoaded", positionDesktopSuggestionsBox);
-
