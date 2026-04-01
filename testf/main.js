@@ -361,7 +361,7 @@
 
             /* Attribution: always expanded so it’s visible (no compact icon only) */
             this.map.addControl(new window.mapboxgl.AttributionControl({
-                customAttribution: '<a href="index.html">© RailGuide</a>',
+                customAttribution: '<a href="index.html">© Rail Guide</a>',
                 compact: false
             }), "bottom-left");
 
