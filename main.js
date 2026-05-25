@@ -6,7 +6,7 @@
         a: ["America", "Asia", "Africa", "America", "Asia", "Africa"]
     },
     data = {
-        countries:["Canada", "US", "Mexico"],
+        countries:["Canada", "US"],
         /*style:[
             "m729/cjipjz6au358b2sukzcojfkae",
             "m729/cjipkyug036382rrpvvrig36o"
@@ -66,28 +66,136 @@
         return div.innerHTML;
     }
 
-    /** Step 13: Build popup HTML from layer data fields (extensible; some as links). Add to POPUP_FIELD_KEYS to show more. */
-    /*var POPUP_FIELD_KEYS = ["rr_full", "classic_full", "rg_name", "sub_title", "rg_desc"];
-    function buildPopupHtml ( properties ) {
+    function linkifyText ( text ) {
+        if (!text) return "";
+        var urlRe = /(https?:\/\/[^\s<>"']+|www\.[^\s<>"']+)/gi;
+        var parts = text.split(urlRe);
+        var out = [];
+        for (var i = 0; i < parts.length; i++) {
+            var part = parts[i];
+            if (/^https?:\/\//i.test(part) || /^www\./i.test(part)) {
+                var href = /^https?:\/\//i.test(part) ? part : "https://" + part;
+                out.push("<a href=\"" + escapeHtml(href) + "\" target=\"_blank\" rel=\"noopener\">" + escapeHtml(part) + "</a>");
+            } else {
+                out.push(escapeHtml(part).replace(/\n/g, "<br>"));
+            }
+        }
+        return out.join("");
+    }
+
+    /** Step 13: Build popup HTML from layer data fields. Per-map config in HOVER_POPUP_CONFIG. */
+    var POPUP_FIELD_KEYS = ["rr_full", "classic_full", "rg_name", "sub_title", "rg_desc"];
+
+    /**
+     * Per-map config for hover and popup. Style index 0=Current, 1=Attractions, 2=Classic Owners, 3=Current/Classic, 4=Early Owners, 5=Points of Interest, 6=Abandoned, 7=Satellite.
+     *   hoverFields, popupFields: property keys for hover/popup.
+     *   hoverMaxChars, hoverMaxLines, popupMaxCharsPerField: optional limits.
+     *   popupFieldStyles: optional object mapping field key to CSS class for styling (e.g. rg_name: "popup-field-title").
+     *   hoverFieldStyles: optional object mapping field key to CSS class for hover tooltip (e.g. rg_name: "hover-field-title").
+     *   linkDisplayText: optional object mapping field key to alternate link text (e.g. sub_title: "Open article") when the field value is a URL.
+     */
+    /*var HOVER_POPUP_CONFIG = {
+        0: { hoverFields: ["rr_full", "rg_name"], popupFields: ["rr_full", "rg_name", "sub_title", "rg_desc"], popupFieldStyles: { rg_name: "popup-field-title", sub_title: "popup-field-sub" }, hoverFieldStyles: { rr_full: "hover-field-title" } },
+        1: { hoverFields: ["rg_name", "sub_title"], popupFields: ["rg_name", "sub_title", "rg_desc"], popupFieldStyles: { rg_name: "popup-field-title", sub_title: "popup-field-sub" }, hoverFieldStyles: { rg_name: "hover-field-title", sub_title: "hover-field-sub" }, linkDisplayText: { rg_desc: "Open article" } },
+        2: { hoverFields: ["classic_full", "rg_name", "sub_title", "rg_desc"], popupFields: ["classic_full", "rg_name", "sub_title", "rg_desc"], popupFieldStyles: { classic_full: "popup-field-title", sub_title: "popup-field-sub" }, hoverFieldStyles: { classic_full: "hover-field-title", sub_title: "hover-field-sub" } },
+        3: { hoverFields: ["rr_full", "classic_full", "rg_name", "rg_desc"], popupFields: ["rr_full", "classic_full", "rg_name", "sub_title", "rg_desc"], popupFieldStyles: { rg_name: "popup-field-title", sub_title: "popup-field-sub" }, hoverFieldStyles: { rg_name: "hover-field-title" } },
+        4: { hoverFields: ["rr_full", "classic_full", "rg_name", "sub_title"], popupFields: ["rr_full", "classic_full", "rg_name", "sub_title", "rg_desc"], popupFieldStyles: { rg_name: "popup-field-title", sub_title: "popup-field-sub" }, hoverFieldStyles: { rg_name: "hover-field-title" } },
+        5: { hoverFields: ["rr_full", "classic_full", "rg_name", "sub_title"], popupFields: ["name", "title", "label", "Name", "Title", "description", "url", "website", "link"] },
+        6: { hoverFields: ["rr_full", "classic_full", "rg_name", "sub_title"], popupFields: ["name", "title", "label", "Name", "Title", "description", "url", "website", "link"] },
+        7: { hoverFields: ["rr_full", "classic_full", "rg_name", "sub_title"], popupFields: ["name", "title", "label", "Name", "Title", "description", "url", "website", "link"] }
+    };
+    var DEFAULT_HOVER_MAX_CHARS = 0;
+    var DEFAULT_HOVER_MAX_LINES = 0;
+    var DEFAULT_POPUP_MAX_CHARS_PER_FIELD = 0;*/
+
+    function buildPopupHtml ( properties, options ) {
         if (!properties) return "";
+        options = options || {};
+        var fieldKeys = options.fieldKeys || options.popupFields || POPUP_FIELD_KEYS;
+        var maxCharsPerField = options.maxCharsPerField || options.popupMaxCharsPerField || DEFAULT_POPUP_MAX_CHARS_PER_FIELD;
+        var fieldStyles = options.popupFieldStyles || {};
+        var linkDisplayText = options.linkDisplayText || {};
         var lines = [];
         var seen = {};
-        for (var i = 0; i < POPUP_FIELD_KEYS.length; i++) {
-            var key = POPUP_FIELD_KEYS[i];
+        for (var i = 0; i < fieldKeys.length; i++) {
+            var key = fieldKeys[i];
             var val = properties[key];
             if (val == null || val === "" || seen[key]) continue;
             var s = String(val).trim();
             if (!s) continue;
+            if (maxCharsPerField > 0 && s.length > maxCharsPerField) s = s.substring(0, maxCharsPerField) + "\u2026";
             seen[key] = true;
-            if (/^https?:\/\//i.test(s) || /^www\./i.test(s)) {
+            var isUrl = /^https?:\/\//i.test(s) || /^www\./i.test(s);
+            var inner = "";
+            if (isUrl) {
                 var href = /^https?:\/\//i.test(s) ? s : "https://" + s;
-                lines.push("<a href=\"" + escapeHtml(href) + "\" target=\"_blank\" rel=\"noopener\">" + escapeHtml(s) + "</a>");
+                var displayText = linkDisplayText[key] || s;
+                inner = "<a href=\"" + escapeHtml(href) + "\" target=\"_blank\" rel=\"noopener\">" + escapeHtml(displayText) + "</a>";
             } else {
-                lines.push(escapeHtml(s));
+                inner = linkifyText(s);
             }
+            var cssClass = "popup-field popup-field-" + key.replace(/[^a-z0-9_]/gi, "-");
+            if (fieldStyles[key]) cssClass += " " + fieldStyles[key];
+            lines.push("<span class=\"" + cssClass + "\">" + inner + "</span>");
         }
         return lines.join("<br>") || "";
-    }*/
+    }
+
+    function buildHoverContent ( properties, options ) {
+        if (!properties) return "";
+        options = options || {};
+        var fieldKeys = options.fieldKeys || options.hoverFields || POPUP_FIELD_KEYS;
+        var maxLines = options.maxLines || options.hoverMaxLines || DEFAULT_HOVER_MAX_LINES;
+        var maxTotalChars = options.maxChars || options.hoverMaxChars || DEFAULT_HOVER_MAX_CHARS;
+        var maxCharsPerField = options.maxCharsPerField || 0;
+        var parts = [];
+        var seen = {};
+        for (var i = 0; i < fieldKeys.length; i++) {
+            if (maxLines > 0 && parts.length >= maxLines) break;
+            var key = fieldKeys[i];
+            var val = properties[key];
+            if (val == null || val === "" || seen[key]) continue;
+            var s = String(val).trim();
+            if (!s) continue;
+            if (maxCharsPerField > 0 && s.length > maxCharsPerField) s = s.substring(0, maxCharsPerField) + "\u2026";
+            seen[key] = true;
+            parts.push(s);
+        }
+        var text = parts.join("\n");
+        if (maxTotalChars > 0 && text.length > maxTotalChars) text = text.substring(0, maxTotalChars) + "\u2026";
+        return text;
+    }
+
+    function buildHoverHtml ( properties, options ) {
+        if (!properties) return "";
+        options = options || {};
+        var fieldKeys = options.fieldKeys || options.hoverFields || POPUP_FIELD_KEYS;
+        var maxLines = options.maxLines || options.hoverMaxLines || DEFAULT_HOVER_MAX_LINES;
+        var maxTotalChars = options.maxChars || options.hoverMaxChars || DEFAULT_HOVER_MAX_CHARS;
+        var maxCharsPerField = options.maxCharsPerField || 0;
+        var fieldStyles = options.hoverFieldStyles || {};
+        var parts = [];
+        var seen = {};
+        var totalChars = 0;
+        for (var i = 0; i < fieldKeys.length; i++) {
+            if (maxLines > 0 && parts.length >= maxLines) break;
+            if (maxTotalChars > 0 && totalChars >= maxTotalChars) break;
+            var key = fieldKeys[i];
+            var val = properties[key];
+            if (val == null || val === "" || seen[key]) continue;
+            var s = String(val).trim();
+            if (!s) continue;
+            if (maxCharsPerField > 0 && s.length > maxCharsPerField) s = s.substring(0, maxCharsPerField) + "\u2026";
+            if (maxTotalChars > 0 && totalChars + s.length > maxTotalChars) s = s.substring(0, maxTotalChars - totalChars) + "\u2026";
+            totalChars += s.length;
+            seen[key] = true;
+            var inner = linkifyText(s);
+            var cssClass = "hover-field hover-field-" + key.replace(/[^a-z0-9_]/gi, "-");
+            if (fieldStyles[key]) cssClass += " " + fieldStyles[key];
+            parts.push("<div class=\"hover-line\"><span class=\"" + cssClass + "\">" + inner + "</span></div>");
+        }
+        return parts.join("") || "";
+    }
 
     /** 
      * Given a query in the form "lng, lat" or "lat, lng"
@@ -145,6 +253,7 @@
     class handleMapPrcoessCreation {
         constructor ( options ) {
             void 0 === options && ( options = {} );
+            this.currentStyleIndex = options.styleNumber !== undefined ? options.styleNumber : 0;
             this.map = new window.mapboxgl.Map({
                 container: "map",
                 style: "mapbox://styles/" + data.map_styles[options.styleNumber],
@@ -167,7 +276,7 @@
             });
 
             this.mapScale = new mapboxgl.ScaleControl({
-                maxWidth: 125,
+                maxWidth: 80,
                 unit: "imperial"
             });
             
@@ -221,7 +330,7 @@
             };
 
             this.setStyle = function (layer){
-                //open listview and send id
+                base.currentStyleIndex = layer;
                 let layerId = data.map_styles[layer];
                 base.map.setStyle("mapbox://styles/" + layerId);
             };
@@ -251,9 +360,10 @@
             // document.getElementById("custom-map-compass-placeholder-mb").appendChild((new window.mapboxgl.NavigationControl({showCompass: true, showZoom: false})).onAdd(this.map));
             // document.getElementById("custom-map-compass-placeholder-mb-sm").appendChild((new window.mapboxgl.NavigationControl({showCompass: true, showZoom: false})).onAdd(this.map));
 
-            /* Attribution: © Rail Guide as link to home */
+            /* Attribution: always expanded so it’s visible (no compact icon only) */
             this.map.addControl(new window.mapboxgl.AttributionControl({
-                customAttribution: '<a href="index.html">© Rail Guide</a>'
+                customAttribution: '<a href="index.html">© Rail Guide</a>',
+                compact: false
             }), "bottom-left");
 
             /*const scale = new mapboxgl.ScaleControl({
@@ -267,6 +377,21 @@
 
         addEvents () {
             let base = this;
+
+            function runBottomLayout () {
+                if (typeof ensureBottomLeftControlsAboveBar === "function") ensureBottomLeftControlsAboveBar();
+                if (typeof positionScaleBar === "function") positionScaleBar();
+                if (typeof positionDesktopMapList === "function") positionDesktopMapList();
+            }
+            this.map.once("load", function () {
+                runBottomLayout();
+                setTimeout(runBottomLayout, 100);
+                setTimeout(runBottomLayout, 400);
+                setTimeout(runBottomLayout, 800);
+            });
+            this.map.on("style.load", function () {
+                if (typeof positionScaleBarAfterStyleLoad === "function") positionScaleBarAfterStyleLoad();
+            });
 
             window.addEventListener("resize", function () {
                 base.addSearchBox();
@@ -319,21 +444,35 @@
                 /*base.updateUrlPath();*/
             });
 
-            /* Hover tooltip + pointer cursor on map icons/lines (like british_railways) */
-            /*var hoverTooltip = document.getElementById("map-hover-tooltip");
+            /* Hover tooltip + pointer cursor; uses per-map HOVER_POPUP_CONFIG */
+            var hoverTooltip = document.getElementById("map-hover-tooltip");
             if (hoverTooltip) {
                 this.map.on("mousemove", function (e) {
                     var features = base.map.queryRenderedFeatures(e.point);
                     var label = "";
+                    var cfg = HOVER_POPUP_CONFIG[base.currentStyleIndex] || {};
+                    var useHoverStyles = cfg.hoverFieldStyles && Object.keys(cfg.hoverFieldStyles).length > 0;
                     for (var i = 0; i < features.length; i++) {
                         var p = features[i].properties;
                         if (!p) continue;
-                        label = p.rr_full || p.classic_full || p.rg_name || p.sub_title || "";
-                        if (label && String(label).trim()) break;
+                        if (useHoverStyles) {
+                            label = buildHoverHtml(p, { hoverFields: cfg.hoverFields, hoverMaxChars: cfg.hoverMaxChars, hoverMaxLines: cfg.hoverMaxLines, hoverFieldStyles: cfg.hoverFieldStyles });
+                            if (label && label.replace(/<[^>]+>/g, "").trim()) break;
+                        } else {
+                            label = buildHoverContent(p, { hoverFields: cfg.hoverFields, hoverMaxChars: cfg.hoverMaxChars, hoverMaxLines: cfg.hoverMaxLines });
+                            if (label && String(label).trim()) break;
+                        }
                     }
-                    if (label && String(label).trim()) {
+                    if (
+                        (useHoverStyles && label && label.replace(/<[^>]+>/g, "").trim()) ||
+                        (!useHoverStyles && label && String(label).trim())
+                    ) {
                         base.map.getCanvas().style.cursor = "pointer";
-                        hoverTooltip.textContent = String(label).trim();
+                        if (useHoverStyles) {
+                            hoverTooltip.innerHTML = label;
+                        } else {
+                            hoverTooltip.textContent = String(label).trim();
+                        }
                         hoverTooltip.classList.add("is-visible");
                         var mapRect = base.map.getContainer().getBoundingClientRect();
                         hoverTooltip.style.left = (mapRect.left + e.point.x + 10) + "px";
@@ -350,9 +489,9 @@
                     hoverTooltip.classList.remove("is-visible");
                     hoverTooltip.setAttribute("aria-hidden", "true");
                 });
-            }*/
+            }
 
-            /* Click/tap: popup above feature, stays until X or click outside (per client) */
+            /* Click/tap: popup above feature; uses per-map HOVER_POPUP_CONFIG */
             var featurePopup = null;
             this.map.on("click", function (e) {
                 var features = base.map.queryRenderedFeatures(e.point);
@@ -361,7 +500,7 @@
                 for (var i = 0; i < features.length; i++) {
                     var p = features[i].properties;
                     if (!p) continue;
-                    label = p.rr_full || p.rg_desc || p.rg_name || p.sub_title || "";
+                    label = p.rr_full || p.classic_full || p.rg_name || p.sub_title || p.rg_desc || "";
                     if (label && String(label).trim()) {
                         feature = features[i];
                         break;
@@ -369,11 +508,19 @@
                 }
                 if (feature && label && String(label).trim()) {
                     if (featurePopup) featurePopup.remove();
-                    var popupBody = buildPopupHtml(feature.properties);
+                    var cfg = HOVER_POPUP_CONFIG[base.currentStyleIndex] || {};
+                    var popupBody = buildPopupHtml(feature.properties, {
+                        fieldKeys: cfg.popupFields,
+                        maxCharsPerField: cfg.popupMaxCharsPerField,
+                        popupFieldStyles: cfg.popupFieldStyles,
+                        linkDisplayText: cfg.linkDisplayText
+                    });
                     if (!popupBody) popupBody = escapeHtml(String(label).trim());
                     featurePopup = new window.mapboxgl.Popup({
                         closeButton: true,
-                        closeOnClick: true
+                        closeOnClick: true,
+                        offset: 12,
+                        maxWidth: "none"
                     })
                         .setLngLat(e.lngLat)
                         .setHTML("<div class=\"map-feature-popup-content\">" + popupBody + "</div>")
@@ -461,13 +608,12 @@
 
         showLatitudeAndLongitudeAndZoomLevel ( center ) {
             void 0 === center && ( center =  [ this.map.getCenter().lng, this.map.getCenter().lat ]);
-            let showLongitudeLabelElement = document.querySelector("#show-latitude-and-longitude #show-longitude-label"),
-            showLatitudeLabelElement = document.querySelector("#show-latitude-and-longitude #show-latitude-label"),
+            let showCoordinatesDisplay = document.querySelector("#show-latitude-and-longitude #show-coordinates-display"),
             showZoomLevelLabelElement = document.querySelector("#show-latitude-and-longitude #show-zoom-level-label");
-
-            null === showLongitudeLabelElement || ( showLongitudeLabelElement.innerHTML = Array.isArray(center) ? Number(center[0]).toFixed(3) : "" );
-
-            null === showLatitudeLabelElement || ( showLatitudeLabelElement.innerHTML = Array.isArray(center) ? Number(center[1]).toFixed(3) : "" );
+            if (showCoordinatesDisplay) {
+                var c = this.map.getCenter();
+                showCoordinatesDisplay.textContent = Number(c.lat).toFixed(3) + ", " + Number(c.lng).toFixed(3);
+            }
             null === showZoomLevelLabelElement || ( showZoomLevelLabelElement.innerHTML = " z" + (Math.round(this.map.getZoom() * 100) / 100) );
         };
 
@@ -513,7 +659,7 @@
             var center = currentActiveMap.map.getCenter();
             var lat = Number(center.lat).toFixed(3);
             var lng = Number(center.lng).toFixed(3);
-            var text = lat + ", " + lng;
+            var text = lat + "," + lng;
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(text).then(function () {
                     bubble.classList.add("is-visible");
@@ -706,30 +852,27 @@
         searchUL.innerHTML = "";
     }
 
-    //Position Maps list
+    //Position Maps list: sit just above the Maps button
     function positionDesktopMapList (argument) {
         try {
 
             let containerList = document.getElementById("ul"),
             positionTarget = document.querySelector(".my-custom-controls #map2 button"),
             positionTargetRect = positionTarget.getBoundingClientRect(),
-            myCustomControls = document.querySelector(".main-ctrl"),
             bodyRect = document.body.getBoundingClientRect(),
             leftOfBodyTarget = positionTargetRect.left < bodyRect.left ? bodyRect.left - positionTargetRect.left : positionTargetRect.left - bodyRect.left,
             containerListMaxNumber = 0 < window.innerHeight - 32 * containerList.children.length - 30 - 90 ? containerList.children.length : Math.round( (window.innerHeight - 30 - 90) / 32 ) ;
 
             containerListMaxNumber = containerList.children.length < containerListMaxNumber ? containerList.children.length : containerListMaxNumber;
 
-            containerList.style.position = "absolute";
+            containerList.style.position = "fixed";
             containerList.style.top = "auto";
-
-            containerList.style.bottom = "calc( " + getComputedStyle(myCustomControls).getPropertyValue("height") + " + " +  getComputedStyle(myCustomControls).getPropertyValue("bottom") + " + 8px )";
+            containerList.style.bottom = (window.innerHeight - positionTargetRect.top + 4) + "px";
             containerList.style.left = ( leftOfBodyTarget - ( ( positionTargetRect.width - 13 ) / 2 ) ) + "px";
             containerList.style.marginBottom = "0px";
-            containerList.style.height = "100%";
+            containerList.style.height = "auto";
             containerList.style.maxHeight = "calc( 32px * " + containerListMaxNumber + " + 2px )";
             containerList.style.overflow = "auto";
-
             containerList.style.right = "auto";
         } catch( error ) {
             console.log(error);
@@ -823,6 +966,22 @@
     window.addEventListener("load", centerTopbarAds);
     window.addEventListener("DOMContentLoaded", centerTopbarAds);
 
+    /**
+     * Mapbox attribution lives inside #map (z-index 0). The fixed bottom bar (.main-ctrl, z-index 100)
+     * paints above the entire map layer, so attribution is hidden on iPad/Safari. Move the bottom-left
+     * control group to document.body and fix z-index so attribution + scale stay visible above the bar.
+     */
+    function ensureBottomLeftControlsAboveBar () {
+        var bl = document.querySelector(".mapboxgl-ctrl-bottom-left");
+        if (!bl) return;
+        if (bl.parentNode !== document.body) {
+            document.body.appendChild(bl);
+        }
+        bl.style.position = "fixed";
+        bl.style.zIndex = "110";
+        bl.style.pointerEvents = "auto";
+    }
+
     function positionScaleBar () {
         var scale = document.querySelector(".mapboxgl-ctrl-scale");
         var attribution = document.querySelector(".mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-attrib, .mapboxgl-ctrl.mapboxgl-ctrl-attrib");
@@ -854,22 +1013,59 @@
         scale.style.left = (rightEdge + 12) + "px";
     }
 
+    function positionScaleBarAfterStyleLoad () {
+        ensureBottomLeftControlsAboveBar();
+        positionScaleBar();
+        setTimeout(function () {
+            ensureBottomLeftControlsAboveBar();
+            positionScaleBar();
+        }, 80);
+        setTimeout(function () {
+            ensureBottomLeftControlsAboveBar();
+            positionScaleBar();
+        }, 250);
+        setTimeout(function () {
+            ensureBottomLeftControlsAboveBar();
+            positionScaleBar();
+        }, 700);
+    }
+
     function runPositionScaleBarWhenReady () {
+        ensureBottomLeftControlsAboveBar();
         positionScaleBar();
         requestAnimationFrame(function () {
-            requestAnimationFrame(positionScaleBar);
+            requestAnimationFrame(function () {
+                ensureBottomLeftControlsAboveBar();
+                positionScaleBar();
+            });
         });
     }
 
-    window.addEventListener("resize", positionScaleBar);
+    window.addEventListener("resize", function () {
+        ensureBottomLeftControlsAboveBar();
+        positionScaleBar();
+    });
     window.addEventListener("load", function () {
         runPositionScaleBarWhenReady();
-        setTimeout(positionScaleBar, 150);
-        setTimeout(positionScaleBar, 500);
+        setTimeout(function () {
+            ensureBottomLeftControlsAboveBar();
+            positionScaleBar();
+        }, 150);
+        setTimeout(function () {
+            ensureBottomLeftControlsAboveBar();
+            positionScaleBar();
+        }, 500);
+        setTimeout(function () {
+            ensureBottomLeftControlsAboveBar();
+            positionScaleBar();
+        }, 1200);
     });
     window.addEventListener("DOMContentLoaded", function () {
         runPositionScaleBarWhenReady();
     });
+
+
+
 
 
     function positionDesktopSuggestionsBox () {

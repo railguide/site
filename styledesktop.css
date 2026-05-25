@@ -36,6 +36,22 @@ div {
     gap: 12px;
 }
 .store-badge-apple { order: 1; }
+/* Apple badge: use SVG only, no extra black box; same height as Google */
+.store-badge-apple {
+    padding: 0;
+    background: transparent !important;
+    border-radius: 0;
+    line-height: 0;
+    border: none;
+    display: inline-block;
+    flex-shrink: 0;
+}
+.store-badge-apple .store-badge-img {
+    height: 40px;
+    width: auto;
+    display: block;
+    vertical-align: middle;
+}
 .store-badge-google { order: 2; }
 .topbar-contact { order: 3; }
 .topbar-fb { order: 4; }
@@ -159,9 +175,13 @@ div {
      height: 40px;
      min-height: 40px;
      max-height: 40px;
-     bottom: calc(40px + env(safe-area-inset-bottom, 0px));
-     z-index: 1;
-     position: absolute;
+     bottom: calc(40px + 24px + env(safe-area-inset-bottom, 0px));
+     z-index: 100;
+     position: fixed;
+     left: 0;
+     right: 0;
+     pointer-events: auto;
+     transform: translateZ(0);
 }
 
  /* Lock bar height so search focus/typing doesn't move buttons (desktop/tablet) */
@@ -175,6 +195,7 @@ div {
      min-height: 40px;
      max-height: 40px;
      flex-wrap: nowrap;
+     pointer-events: auto;
 }
 
 .my-custom-controls > * {
@@ -184,7 +205,7 @@ div {
 
 /* Mobile view: commented out - desktop bar stays visible at all widths */
 /*
-@media screen and ( max-width:  915px ) {
+@media screen and ( max-width:  425px ) {
       .my-custom-controls{
           display: none;
     }
@@ -262,7 +283,12 @@ div {
      font-size: medium;
      font-family: "Roboto", sans-serif;
      -webkit-font-smoothing: antialiased;
+     pointer-events: auto;
+     cursor: pointer;
+     touch-action: manipulation;
+     -webkit-tap-highlight-color: rgba(1, 1, 128, 0.25);
 }
+
  .my-custom-controls .inp, 
  .my-custom-controls .input{
      border-radius: 20px;
@@ -309,7 +335,7 @@ div {
      margin-bottom: 12px;
  }
 
-@media screen and ( max-width:  915px ) {
+@media screen and ( max-width:  425px ) {
      .my-custom-controls-mob{
         display: flex;
      }
@@ -357,7 +383,7 @@ div {
     -webkit-font-smoothing: antialiased;
 }
 
- @media screen and (max-width: 915px) {
+ @media screen and (max-width: 425px) {
      .my-custom-controls-mob  #guide .btn {
          white-space: nowrap ;
          width: auto ;
@@ -521,16 +547,48 @@ div {
 
 /* Mapbox attribution: always visible (per client), ensure not covered */
 .mapboxgl-ctrl-bottom-left {
-    z-index: 10;
+    z-index: 50;
+}
+/* When JS moves controls to body (above .main-ctrl), stack above bottom bar — fixes iPad */
+body > .mapboxgl-ctrl-bottom-left {
+    z-index: 110 !important;
+}
+/* Mapbox may switch to compact layout on touch; force full attribution text visible */
+.mapboxgl-ctrl.mapboxgl-ctrl-attrib.mapboxgl-compact .mapboxgl-ctrl-attrib-inner,
+.mapboxgl-ctrl.mapboxgl-ctrl-attrib.mapboxgl-compact .mapboxgl-ctrl-attrib-inner a {
+    display: inline !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    max-height: none !important;
+    position: relative !important;
+}
+.mapboxgl-ctrl.mapboxgl-ctrl-attrib.mapboxgl-compact > button.mapboxgl-ctrl-attrib-button {
+    display: none !important;
 }
  .mapboxgl-ctrl.mapboxgl-ctrl-attrib {
-     float: right;
-     padding: 0 5px;
-     background-color: hsla(0,0%,100%,.5);
+     /* Keep Mapbox default-like "pill" but center text cleanly */
+     float: none;
+     display: inline-flex;
+     align-items: center;
+     justify-content: center;
+     padding: 2px 8px;
+     background-color: hsla(0,0%,100%,.55);
      color: #000;
      margin: 0;
      max-width: none;
+     visibility: visible !important;
+     opacity: 1 !important;
+     font-size: 13px;
+     line-height: 1.3;
+     border-radius: 3px;
 }
+ .mapboxgl-ctrl.mapboxgl-ctrl-attrib .mapboxgl-ctrl-attrib-inner {
+     display: inline-flex;
+     align-items: center;
+     justify-content: center;
+     text-align: center;
+     gap: 4px;
+ }
  .mapboxgl-ctrl.mapboxgl-ctrl-attrib a {
      color: #000;
 }
@@ -581,7 +639,7 @@ div {
     height: 100%;
 }
 
-@media screen and ( max-width:  915px ) {
+@media screen and ( max-width:  425px ) {
      #add-top{
           width: 100%;
          max-width:100vw;
@@ -607,7 +665,7 @@ div {
      width: 100%;
 }
 
-@media screen and ( max-width:  915px ) {
+@media screen and ( max-width:  425px ) {
      #add-left {
          display: none;
     }
@@ -626,17 +684,18 @@ div {
      -webkit-font-smoothing: antialiased;
 }
 
-@media screen and ( max-width:  915px ) {
+@media screen and ( max-width:  425px ) {
      #add-right{
          display: none;
     }
 }
 
  .mapboxgl-ctrl-bottom-left {
-     bottom: calc(4px + env(safe-area-inset-bottom, 0px));
-     left: 160px;
-         display: flex;
+    bottom: calc(4px + 24px + env(safe-area-inset-bottom, 0px));
+    left: 160px;
+    display: flex;
     flex-direction: row-reverse;
+    z-index: 50;
 }
 
 .mapboxgl-ctrl-bottom-left .mapboxgl-ctrl {
@@ -713,7 +772,7 @@ div {
      top: 0 ;
 }
 */
- @media screen and (max-width: 915px) {
+ @media screen and (max-width: 425px) {
      .mapboxgl-ctrl-top-right {
          bottom: unset !important;
     }
@@ -724,7 +783,7 @@ div {
          width: 23vw;
     }
      .mapboxgl-ctrl-bottom-left {
-         left: 8px;
+         left: 160px;
     }
      .mapboxgl-canvas{
          width: 100% !important;
@@ -774,7 +833,7 @@ div {
 }
 /* Mobile landscape - commented out */
 /*
- @media screen and (max-width: 915px) and (min-width: 640px) {
+ @media screen and (max-width: 425px) and (min-width: 640px) {
      .mobile_landscape .mapboxgl-ctrl.mapboxgl-ctrl-group{
          top: 165px !important;
     }
@@ -791,7 +850,7 @@ div {
          margin: 89px 10px 0px 0px !important;
     }
      .mapboxgl-ctrl-bottom-left {
-         left: 8px;
+         left: 160px;
     }
      .modal-content{
          width: 97vw;
@@ -1121,9 +1180,9 @@ div {
  #show-latitude-and-longitude {
      background-color: #fff;
      color: #000;
-     position: absolute;
+     position: fixed;
      top: auto;
-     bottom: calc(4px + env(safe-area-inset-bottom, 0px));
+     bottom: calc(4px + 24px + env(safe-area-inset-bottom, 0px));
      right: 166px;
      left: auto;
      display: flex;
@@ -1133,6 +1192,22 @@ div {
      gap: 2px;
      padding: 0 8px;
      border-radius: 6px;
+     z-index: 90;
+}
+
+/* Tablet / desktop: slightly less extra gap above bottom edge than phones; keep attribution/coordinates toward center for banner ad space */
+@media (min-width: 768px) {
+    .main-ctrl {
+        bottom: calc(40px + 8px + env(safe-area-inset-bottom, 0px));
+    }
+    #show-latitude-and-longitude {
+        bottom: calc(4px + 8px + env(safe-area-inset-bottom, 0px));
+        right: 166px;
+    }
+    .mapboxgl-ctrl-bottom-left {
+        bottom: calc(4px + 8px + env(safe-area-inset-bottom, 0px));
+        left: 160px;
+    }
 }
 
  .coordinates-copy-btn {
@@ -1213,31 +1288,53 @@ div {
     visibility: visible;
 }
 
-/* Hover tooltip on map icons/lines (like british_railways) */
+/* Hover tooltip on map icons/lines; supports multiple lines (newlines from buildHoverContent) */
  .map-hover-tooltip {
      position: fixed;
      z-index: 100;
+     display: inline-block;
      padding: 4px 8px;
      background: rgba(0,0,0,.85);
      color: #fff;
      font-size: 12px;
      font-family: "Roboto", sans-serif;
      border-radius: 4px;
-     white-space: nowrap;
-     max-width: 240px;
-     overflow: hidden;
-     text-overflow: ellipsis;
+     /* Preserve \n from textContent (old hover style) */
+     white-space: pre-line;
+     max-width: 280px;
+     overflow-wrap: anywhere;
+     word-break: break-word;
      pointer-events: none;
      visibility: hidden;
      left: 0;
      top: 0;
+     line-height: 1.3;
 }
  .map-hover-tooltip.is-visible {
      visibility: visible;
 }
-@media screen and ( max-width: 915px ) {
+/* Hover HTML mode (bold title etc.) should still stack lines normally */
+.map-hover-tooltip .hover-line {
+    display: block;
+}
+/* Hover field styling (hoverFieldStyles in HOVER_POPUP_CONFIG, same idea as popupFieldStyles) */
+.map-hover-tooltip .hover-field-title {
+    font-weight: bold;
+    font-size: 14px;
+}
+.map-hover-tooltip .hover-field-sub {
+    font-size: 10px;
+}
+.map-hover-tooltip a {
+    color: #fff;
+    text-decoration: underline;
+}
+.map-hover-tooltip a:hover {
+    text-decoration: none;
+}
+@media screen and ( max-width:  425px ) {
      #show-latitude-and-longitude {
-         right: 8px;
+         right: 166px;
     }
 }
 
@@ -1304,7 +1401,7 @@ div {
      right: 0;
      bottom: 0;
 }
- @media (min-width:  640px) and (max-width: 915px ) {
+ @media (min-width:  640px) and (max-width: 425px ) {
      #custom-map-compass-placeholder-mb {
          display: flex;
     }
@@ -1348,12 +1445,21 @@ div {
     margin-top: -5px;
 }
 
-/* Step 13: popup content – layer data, links, overflow with fade, extensible */
+/* Mapbox popup container: set width here so popup can be wider than default */
+/* Popup width: change max-width here; JS sets maxWidth: "none" so this takes effect */
+.mapboxgl-popup-content {
+    min-width: 200px;
+    max-width: 500px !important;
+    padding: 0;
+    width: max-content;
+}
+
+/* Step 13: popup content – layer data, links, line breaks, overflow scroll */
 .map-feature-popup-content {
     font-family: "Roboto", sans-serif;
     font-size: 13px;
-    padding: 4px 0;
-    max-width: 280px;
+    padding: 14px 12px 8px 12px;
+    max-width: 100%;
     max-height: 200px;
     overflow-y: auto;
     line-height: 1.4;
@@ -1364,4 +1470,12 @@ div {
 }
 .map-feature-popup-content a:hover {
     text-decoration: underline;
+}
+/* Per-field styling: add classes in HOVER_POPUP_CONFIG.popupFieldStyles (e.g. rg_name: "popup-field-title") */
+.map-feature-popup-content .popup-field-title {
+    font-weight: bold;
+    font-size: 14px;
+}
+.map-feature-popup-content .popup-field-sub {
+    font-size: 10px;
 }
