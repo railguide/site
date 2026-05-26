@@ -1122,8 +1122,8 @@
 
     function positionScaleBar () {
         var scale = document.getElementById("rg-dual-scale");
-        var attribution = document.querySelector(".mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-attrib, .mapboxgl-ctrl.mapboxgl-ctrl-attrib");
         var bottomLeft = document.querySelector(".mapboxgl-ctrl-bottom-left");
+        var coords = document.getElementById("show-latitude-and-longitude");
 
         if (!scale || !bottomLeft) return;
 
@@ -1134,21 +1134,13 @@
         scale.style.right = "auto";
         scale.style.marginRight = "0";
 
-        var rightEdge = 0;
-        if (attribution) {
-            var ar = attribution.getBoundingClientRect();
-            rightEdge = ar.right;
-            var links = attribution.querySelectorAll("a");
-            for (var i = 0; i < links.length; i++) {
-                var lr = links[i].getBoundingClientRect();
-                if (lr.right > rightEdge) rightEdge = lr.right;
-            }
+        // Place scale bar to the right of the coordinates bar
+        var leftEdge = window.innerWidth / 2; // fallback: center of page
+        if (coords) {
+            var cr = coords.getBoundingClientRect();
+            if (cr.right > 0) leftEdge = cr.right;
         }
-        if (rightEdge <= 0) {
-            var bl = bottomLeft.getBoundingClientRect();
-            rightEdge = bl.right;
-        }
-        scale.style.left = (rightEdge + 12) + "px";
+        scale.style.left = (leftEdge + 12) + "px";
     }
 
     function positionScaleBarAfterStyleLoad () {

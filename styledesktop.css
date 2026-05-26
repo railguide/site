@@ -692,7 +692,8 @@ body > .mapboxgl-ctrl-bottom-left {
 
  .mapboxgl-ctrl-bottom-left {
     bottom: calc(4px + 24px + env(safe-area-inset-bottom, 0px));
-    left: 160px;
+    left: auto;
+    right: 50vw;
     display: flex;
     flex-direction: row-reverse;
     z-index: 50;
@@ -783,7 +784,8 @@ body > .mapboxgl-ctrl-bottom-left {
          width: 23vw;
     }
      .mapboxgl-ctrl-bottom-left {
-         left: 160px;
+         left: auto;
+         right: 50vw;
     }
      .mapboxgl-canvas{
          width: 100% !important;
@@ -850,7 +852,8 @@ body > .mapboxgl-ctrl-bottom-left {
          margin: 89px 10px 0px 0px !important;
     }
      .mapboxgl-ctrl-bottom-left {
-         left: 160px;
+         left: auto;
+         right: 50vw;
     }
      .modal-content{
          width: 97vw;
@@ -1087,7 +1090,8 @@ body > .mapboxgl-ctrl-bottom-left {
 }
  .tablet_portrait .mapboxgl-ctrl-bottom-left {
      bottom: calc(1vh + env(safe-area-inset-bottom, 0px));
-     left: 2.5vw;
+     left: auto;
+     right: 50vw;
 }
  .tablet_portrait .mapboxgl-ctrl-bottom-left .mapboxgl-ctrl {
      margin: 0 15px 5px 0px;
@@ -1183,8 +1187,8 @@ body > .mapboxgl-ctrl-bottom-left {
      position: fixed;
      top: auto;
      bottom: calc(4px + 24px + env(safe-area-inset-bottom, 0px));
-     right: 166px;
-     left: auto;
+     right: auto;
+     left: 50vw;
      display: flex;
      flex-wrap: nowrap;
      align-items: center;
@@ -1202,11 +1206,13 @@ body > .mapboxgl-ctrl-bottom-left {
     }
     #show-latitude-and-longitude {
         bottom: calc(4px + 8px + env(safe-area-inset-bottom, 0px));
-        right: 166px;
+        right: auto;
+        left: 50vw;
     }
     .mapboxgl-ctrl-bottom-left {
         bottom: calc(4px + 8px + env(safe-area-inset-bottom, 0px));
-        left: 160px;
+        left: auto;
+        right: 50vw;
     }
 }
 
@@ -1334,7 +1340,8 @@ body > .mapboxgl-ctrl-bottom-left {
 }
 @media screen and ( max-width:  425px ) {
      #show-latitude-and-longitude {
-         right: 166px;
+         left: 50vw;
+         right: auto;
     }
 }
 
