@@ -1230,11 +1230,9 @@
             var el = document.getElementById("adhesion_desktop_wrapper");
             var h = 0;
             if (el) {
-                // Measure gap from top of ad to bottom of viewport
                 var rect = el.getBoundingClientRect();
-                var fromBottom = window.innerHeight - rect.top;
-                if (fromBottom > 0) {
-                    h = fromBottom;
+                if (rect.height > 0 && rect.bottom > 0) {
+                    h = rect.height;
                 }
             }
             document.documentElement.style.setProperty("--ad-bottom", h + "px");
