@@ -1230,29 +1230,35 @@
             var el = document.getElementById("adhesion_desktop_wrapper");
             var h = 0;
             if (el) {
-                // Use offsetHeight which works even if not yet in viewport
-                h = el.offsetHeight || 0;
+                h = el.getBoundingClientRect().height ||
+                    el.offsetHeight ||
+                    parseFloat(getComputedStyle(el).height) ||
+                    0;
             }
-            document.documentElement.style.setProperty("--ad-bottom", h + "px");
+            if (h > 0) {
+                document.documentElement.style.setProperty("--ad-bottom", h + "px");
+                // Got a real value - set up ResizeObserver to track changes
+                if (el && !el._rgResizeObserverSet) {
+                    el._rgResizeObserverSet = true;
+                    var ro = new ResizeObserver(function() {
+                        applyAdOffset();
+                    });
+                    ro.observe(el);
+                }
+            }
         }
 
-        // Watch for the ad element to be added to the DOM
-        var observer = new MutationObserver(function() {
+        // Watch for the element to be added to DOM
+        var _adObserver = new MutationObserver(function() {
             var el = document.getElementById("adhesion_desktop_wrapper");
-            if (el) {
-                applyAdOffset();
-                // Also watch the element itself for height changes
-                var elObserver = new ResizeObserver(applyAdOffset);
-                elObserver.observe(el);
-            }
+            if (el) { applyAdOffset(); }
         });
-        observer.observe(document.body, { childList: true, subtree: true });
+        _adObserver.observe(document.body, { childList: true, subtree: true });
 
-        // Fallback polls in case MutationObserver misses it
-        applyAdOffset();
-        setTimeout(applyAdOffset, 1000);
-        setTimeout(applyAdOffset, 3000);
-        setTimeout(applyAdOffset, 6000);
+        // Poll at increasing intervals since Mediavine loads late
+        [500, 1000, 2000, 3000, 5000, 8000].forEach(function(ms) {
+            setTimeout(applyAdOffset, ms);
+        });
 
         window.addEventListener("resize", applyAdOffset);
     })();
