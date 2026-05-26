@@ -1223,32 +1223,36 @@
     window.addEventListener("DOMContentLoaded", positionDesktopSuggestionsBox);
 
     // ── Mediavine adhesion ad offset ─────────────────────────────────────────
-    // Detects the sticky bottom ad height and sets --ad-bottom on :root so all
-    // bottom-positioned controls shift up above the banner.
+    // Watches for #adhesion_desktop_wrapper to appear and sets --ad-bottom so
+    // bottom controls shift up above the banner automatically.
     (function setupAdOffset() {
-        function getAdHeight() {
-            var el = document.getElementById("fixed_container_bottom");
-            if (el) {
-                var rect = el.getBoundingClientRect();
-                if (rect.height > 0) return rect.height;
-            }
-            return 0;
-        }
-
         function applyAdOffset() {
-            var h = getAdHeight();
+            var el = document.getElementById("adhesion_desktop_wrapper");
+            var h = 0;
+            if (el) {
+                // Use offsetHeight which works even if not yet in viewport
+                h = el.offsetHeight || 0;
+            }
             document.documentElement.style.setProperty("--ad-bottom", h + "px");
         }
 
-        // Poll initially since Mediavine loads asynchronously
+        // Watch for the ad element to be added to the DOM
+        var observer = new MutationObserver(function() {
+            var el = document.getElementById("adhesion_desktop_wrapper");
+            if (el) {
+                applyAdOffset();
+                // Also watch the element itself for height changes
+                var elObserver = new ResizeObserver(applyAdOffset);
+                elObserver.observe(el);
+            }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+
+        // Fallback polls in case MutationObserver misses it
         applyAdOffset();
-        setTimeout(applyAdOffset, 500);
-        setTimeout(applyAdOffset, 1500);
+        setTimeout(applyAdOffset, 1000);
         setTimeout(applyAdOffset, 3000);
+        setTimeout(applyAdOffset, 6000);
 
         window.addEventListener("resize", applyAdOffset);
-
-        // Also respond to Mediavine's own events if available
-        window.addEventListener("mv.requestBid", applyAdOffset);
-        window.addEventListener("mediavine:adhesion", applyAdOffset);
     })();
