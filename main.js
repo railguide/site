@@ -1223,8 +1223,8 @@
     window.addEventListener("DOMContentLoaded", positionDesktopSuggestionsBox);
 
     // ── Mediavine adhesion ad offset ─────────────────────────────────────────
-    // Watches for #adhesion_desktop_wrapper to appear and sets --ad-bottom so
-    // bottom controls shift up above the banner automatically.
+    // Detects #adhesion_desktop_wrapper height and sets --ad-bottom on :root
+    // so bottom-positioned controls shift up above the banner automatically.
     (function setupAdOffset() {
         function applyAdOffset() {
             var el = document.getElementById("adhesion_desktop_wrapper");
@@ -1238,7 +1238,7 @@
             document.documentElement.style.setProperty("--ad-bottom", h + "px");
         }
 
-        // Poll at increasing intervals since Mediavine loads late
+        // Poll at increasing intervals since Mediavine loads asynchronously
         [500, 1000, 2000, 3000, 5000, 8000, 12000].forEach(function(ms) {
             setTimeout(applyAdOffset, ms);
         });
