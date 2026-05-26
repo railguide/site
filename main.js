@@ -1221,3 +1221,34 @@
     window.addEventListener("resize", positionDesktopSuggestionsBox);
     window.addEventListener("load", positionDesktopSuggestionsBox);
     window.addEventListener("DOMContentLoaded", positionDesktopSuggestionsBox);
+
+    // ── Mediavine adhesion ad offset ─────────────────────────────────────────
+    // Detects the sticky bottom ad height and sets --ad-bottom on :root so all
+    // bottom-positioned controls shift up above the banner.
+    (function setupAdOffset() {
+        function getAdHeight() {
+            var el = document.getElementById("fixed_container_bottom");
+            if (el) {
+                var rect = el.getBoundingClientRect();
+                if (rect.height > 0) return rect.height;
+            }
+            return 0;
+        }
+
+        function applyAdOffset() {
+            var h = getAdHeight();
+            document.documentElement.style.setProperty("--ad-bottom", h + "px");
+        }
+
+        // Poll initially since Mediavine loads asynchronously
+        applyAdOffset();
+        setTimeout(applyAdOffset, 500);
+        setTimeout(applyAdOffset, 1500);
+        setTimeout(applyAdOffset, 3000);
+
+        window.addEventListener("resize", applyAdOffset);
+
+        // Also respond to Mediavine's own events if available
+        window.addEventListener("mv.requestBid", applyAdOffset);
+        window.addEventListener("mediavine:adhesion", applyAdOffset);
+    })();
