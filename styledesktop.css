@@ -1544,6 +1544,16 @@ body > .mapboxgl-ctrl-bottom-left {
 .rg-attrib-compact.rg-attrib-open .mapboxgl-ctrl-attrib-inner { display: inline; }
 .rg-attrib-compact.rg-attrib-open .rg-attrib-close { display: inline; }
 
+
+
+/* ── Override z-index to sit above Mediavine ad (z-index: 2147483535) ────── */
+.main-ctrl,
+.mapboxgl-ctrl-bottom-left,
+#rg-dual-scale,
+.my-custom-controls {
+    z-index: 2147483600 !important;
+}
+
 /* ── Mediavine adhesion ad offset ───────────────────────────────────────────
    --ad-bottom is set dynamically by JS to the height of the sticky bottom ad.
    All bottom-positioned controls add this so they sit above the banner.     */
@@ -1558,6 +1568,9 @@ body > .mapboxgl-ctrl-bottom-left {
 #rg-dual-scale {
     bottom: calc(4px + 24px + env(safe-area-inset-bottom, 0px) + var(--ad-bottom)) !important;
 }
+#show-latitude-and-longitude {
+    bottom: calc(4px + 24px + env(safe-area-inset-bottom, 0px) + var(--ad-bottom)) !important;
+}
 
 @media screen and (min-width: 768px) {
     .main-ctrl {
@@ -1569,14 +1582,9 @@ body > .mapboxgl-ctrl-bottom-left {
     #rg-dual-scale {
         bottom: calc(4px + 8px + env(safe-area-inset-bottom, 0px) + var(--ad-bottom)) !important;
     }
-}
-
-/* ── Override z-index to sit above Mediavine ad (z-index: 2147483535) ────── */
-.main-ctrl,
-.mapboxgl-ctrl-bottom-left,
-#rg-dual-scale,
-.my-custom-controls {
-    z-index: 2147483600 !important;
+    #show-latitude-and-longitude {
+        bottom: calc(4px + 8px + env(safe-area-inset-bottom, 0px) + var(--ad-bottom)) !important;
+    }
 }
 
 
