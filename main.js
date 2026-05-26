@@ -1,4 +1,4 @@
-// 2026-05-26 0301am    
+// Generated: 2026-05-26 17h42 UTC
 
     "use strict";
 
@@ -1234,7 +1234,11 @@
 
         // Poll at increasing intervals since Mediavine loads asynchronously
         [500, 1000, 2000, 3000, 5000, 8000, 12000].forEach(function(ms) {
-            setTimeout(applyAdOffset, ms);
+            setTimeout(function() {
+                applyAdOffset();
+                // Reposition map list menu after ad shifts buttons up
+                if (typeof positionDesktopMapList === "function") positionDesktopMapList();
+            }, ms);
         });
 
         window.addEventListener("resize", applyAdOffset);
