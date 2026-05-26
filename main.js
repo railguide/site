@@ -1230,35 +1230,21 @@
             var el = document.getElementById("adhesion_desktop_wrapper");
             var h = 0;
             if (el) {
-                h = el.getBoundingClientRect().height ||
-                    el.offsetHeight ||
-                    parseFloat(getComputedStyle(el).height) ||
-                    0;
-            }
-            if (h > 0) {
-                document.documentElement.style.setProperty("--ad-bottom", h + "px");
-                // Got a real value - set up ResizeObserver to track changes
-                if (el && !el._rgResizeObserverSet) {
-                    el._rgResizeObserverSet = true;
-                    var ro = new ResizeObserver(function() {
-                        applyAdOffset();
-                    });
-                    ro.observe(el);
+                // Measure gap from top of ad to bottom of viewport
+                var rect = el.getBoundingClientRect();
+                var fromBottom = window.innerHeight - rect.top;
+                if (fromBottom > 0) {
+                    h = fromBottom;
                 }
             }
+            document.documentElement.style.setProperty("--ad-bottom", h + "px");
         }
 
-        // Watch for the element to be added to DOM
-        var _adObserver = new MutationObserver(function() {
-            var el = document.getElementById("adhesion_desktop_wrapper");
-            if (el) { applyAdOffset(); }
-        });
-        _adObserver.observe(document.body, { childList: true, subtree: true });
-
         // Poll at increasing intervals since Mediavine loads late
-        [500, 1000, 2000, 3000, 5000, 8000].forEach(function(ms) {
+        [500, 1000, 2000, 3000, 5000, 8000, 12000].forEach(function(ms) {
             setTimeout(applyAdOffset, ms);
         });
 
         window.addEventListener("resize", applyAdOffset);
+        window.addEventListener("scroll", applyAdOffset);
     })();
