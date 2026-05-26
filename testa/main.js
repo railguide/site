@@ -279,8 +279,89 @@
                 maxWidth: 80,
                 unit: "imperial"
             });
-            
             this.map.addControl(this.mapScale);
+
+            // Hide native scale; replaced by custom dual-unit bar below
+            (function hideMbScale() {
+                function tryHide() {
+                    var s = document.querySelector(".mapboxgl-ctrl-scale");
+                    if (s) { s.style.display = "none"; }
+                    else { setTimeout(tryHide, 50); }
+                }
+                tryHide();
+            })();
+
+            // Build dual-unit scale bar
+            var rgScale = document.createElement("div");
+            rgScale.id = "rg-dual-scale";
+            rgScale.innerHTML =
+                '<div class="rg-scale-row rg-scale-imp">' +
+                    '<span class="rg-scale-label"></span>' +
+                    '<div class="rg-scale-bar"></div>' +
+                '</div>' +
+                '<div class="rg-scale-row rg-scale-met">' +
+                    '<span class="rg-scale-label"></span>' +
+                    '<div class="rg-scale-bar"></div>' +
+                '</div>';
+            document.body.appendChild(rgScale);
+
+            var _rgBase = this;
+            function updateRgScale() {
+                var map = _rgBase.map;
+                var lat = map.getCenter().lat;
+                var zoom = map.getZoom();
+                var mPerPx = (40075016.686 * Math.cos(lat * Math.PI / 180)) / (512 * Math.pow(2, zoom));
+                var maxPx = 125;
+                var maxM = mPerPx * maxPx;
+
+                // Metric - nice round numbers
+                var mSteps = [1,2,5,10,20,50,100,200,500];
+                function niceMetric(val) {
+                    var mag = Math.pow(10, Math.floor(Math.log10(val)));
+                    var best = mSteps[0] * mag;
+                    for (var i = 0; i < mSteps.length; i++) {
+                        if (mSteps[i] * mag <= val) best = mSteps[i] * mag;
+                    }
+                    return best;
+                }
+                var mVal, mLabel;
+                if (maxM >= 1000) {
+                    mVal = niceMetric(maxM / 1000) * 1000;
+                    mLabel = (mVal / 1000) + " km";
+                } else {
+                    mVal = niceMetric(maxM);
+                    mLabel = mVal + " m";
+                }
+                var mPx = Math.round(mVal / mPerPx);
+
+                // Imperial - flat candidate list avoids ft/mi boundary errors
+                var maxFt = maxM * 3.28084;
+                var ftCandidates = [
+                    50, 100, 200, 500, 1000, 2000,
+                    5280, 5280*2, 5280*5, 5280*10, 5280*20,
+                    5280*50, 5280*100, 5280*200, 5280*500
+                ];
+                var iVal = ftCandidates[0];
+                for (var fi = 0; fi < ftCandidates.length; fi++) {
+                    if (ftCandidates[fi] <= maxFt) iVal = ftCandidates[fi];
+                }
+                var iLabel = iVal >= 5280 ? (iVal / 5280) + " mi" : iVal + " ft";
+                var iPx = Math.round((iVal / 3.28084) / mPerPx);
+
+                var impRow = rgScale.querySelector(".rg-scale-imp");
+                var metRow = rgScale.querySelector(".rg-scale-met");
+                impRow.querySelector(".rg-scale-label").textContent = iLabel;
+                impRow.querySelector(".rg-scale-bar").style.width = iPx + "px";
+                metRow.querySelector(".rg-scale-label").textContent = mLabel;
+                metRow.querySelector(".rg-scale-bar").style.width = mPx + "px";
+                rgScale.style.width = Math.max(iPx, mPx) + "px";
+            }
+
+            _rgBase.map.on("move", updateRgScale);
+            _rgBase.map.on("zoom", updateRgScale);
+            _rgBase.map.on("load", updateRgScale);
+            setTimeout(updateRgScale, 200);
+            setTimeout(updateRgScale, 600);
 
             this.addControl();
             this.addEvents();
@@ -982,8 +1063,65 @@
         bl.style.pointerEvents = "auto";
     }
 
+    // Compact attribution: collapse to icon on narrow screens, expand on wide
+    var COMPACT_BREAKPOINT = 640;
+
+    // Custom compact attribution: hide text behind an info button on narrow screens
+    (function setupCompactAttribution() {
+        function init() {
+            var attrib = document.querySelector(".mapboxgl-ctrl-attrib");
+            if (!attrib) { setTimeout(init, 100); return; }
+
+            // Create info button
+            var btn = document.createElement("button");
+            btn.className = "rg-attrib-btn";
+            btn.setAttribute("aria-label", "Attribution");
+            btn.innerHTML = "ⓘ"; // circled i
+            attrib.insertBefore(btn, attrib.firstChild);
+
+            // Create a close button inside attrib for narrow mode
+            var closeBtn = document.createElement("button");
+            closeBtn.className = "rg-attrib-close";
+            closeBtn.setAttribute("aria-label", "Close attribution");
+            closeBtn.innerHTML = "×";
+            attrib.appendChild(closeBtn);
+
+            var links = attrib.querySelector(".mapboxgl-ctrl-attrib-inner");
+
+            function updateLayout() {
+                if (window.innerWidth < COMPACT_BREAKPOINT) {
+                    attrib.classList.add("rg-attrib-compact");
+                    attrib.classList.remove("rg-attrib-open");
+                } else {
+                    attrib.classList.remove("rg-attrib-compact");
+                    attrib.classList.remove("rg-attrib-open");
+                }
+            }
+
+            btn.addEventListener("click", function(e) {
+                e.stopPropagation();
+                attrib.classList.toggle("rg-attrib-open");
+            });
+
+            closeBtn.addEventListener("click", function(e) {
+                e.stopPropagation();
+                attrib.classList.remove("rg-attrib-open");
+            });
+
+            document.addEventListener("click", function(e) {
+                if (!attrib.contains(e.target)) {
+                    attrib.classList.remove("rg-attrib-open");
+                }
+            });
+
+            window.addEventListener("resize", updateLayout);
+            updateLayout();
+        }
+        setTimeout(init, 400);
+    })();
+
     function positionScaleBar () {
-        var scale = document.querySelector(".mapboxgl-ctrl-scale");
+        var scale = document.getElementById("rg-dual-scale");
         var attribution = document.querySelector(".mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-attrib, .mapboxgl-ctrl.mapboxgl-ctrl-attrib");
         var bottomLeft = document.querySelector(".mapboxgl-ctrl-bottom-left");
 
