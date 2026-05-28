@@ -1,4 +1,4 @@
-// Generated: 2026-05-26 17h42 UTC
+// Generated: 2026-05-28 14h58 PDT
 
     "use strict";
 
@@ -1221,7 +1221,10 @@
     // so bottom-positioned controls shift up above the banner automatically.
     (function setupAdOffset() {
         function applyAdOffset() {
-            var el = document.getElementById("adhesion_desktop_wrapper");
+            // Check all known Mediavine adhesion container ids across device types
+            var el = document.getElementById("adhesion_desktop_wrapper") ||
+                     document.getElementById("adhesion_tablet_container") ||
+                     document.getElementById("adhesion_mobile_wrapper");
             var h = 0;
             if (el) {
                 var rect = el.getBoundingClientRect();
