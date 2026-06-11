@@ -1,4 +1,4 @@
-// Generated: 2026-06-11 00h27 PT
+// Generated: 2026-06-11 00h42 PT
 
     "use strict";
 
@@ -1330,18 +1330,13 @@
         var map = window._rgSteamMap;
         if (!map) return;
 
-        var proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent("https://www.up.com/steam-train-tracker-services-1_0/steamtrain/position") + "&_t=" + Date.now();
+        var targetUrl = "https://www.up.com/steam-train-tracker-services-1_0/steamtrain/position";
+        var proxyUrl = "https://proxy.cors.sh/" + targetUrl + "?_t=" + Date.now();
 
         function attemptFetch(retriesLeft) {
-            fetch(proxyUrl)
+            fetch(proxyUrl, { headers: { "x-cors-api-key": "temp_" + Date.now() } })
                 .then(function(r) { return r.json(); })
-                .then(function(wrapper) {
-                    var data;
-                    try {
-                        data = JSON.parse(wrapper.contents);
-                    } catch (e) {
-                        throw new Error("Proxy returned non-JSON: " + (wrapper.contents || "").slice(0, 80));
-                    }
+                .then(function(data) {
                     if (!data.latitude || !data.longitude) return;
 
                     // Hide loading overlay on first successful fix
