@@ -1,4 +1,4 @@
-// Generated: 2026-06-11 01h19 PT
+// Generated: 2026-06-10 22h26 PT
 
     "use strict";
 
@@ -416,7 +416,6 @@
             this.setStyle = function (layer){
                 base.currentStyleIndex = layer;
                 let layerId = data.map_styles[layer];
-                window._rgStyleSwitchPending = true;
                 base.map.setStyle("mapbox://styles/" + layerId);
             };
         }
@@ -477,9 +476,8 @@
             });
             this.map.on("style.load", function () {
                 if (typeof positionScaleBarAfterStyleLoad === "function") positionScaleBarAfterStyleLoad();
-                // Re-add tracker layer only on genuine user-triggered style switch
-                if (window._rgStyleSwitchPending && typeof initSteamTrainTracker === "function" && window.location.pathname.indexOf("4014.html") !== -1) {
-                    window._rgStyleSwitchPending = false;
+                // Re-add tracker layer after style change
+                if (typeof initSteamTrainTracker === "function" && window.location.pathname.indexOf("4014.html") !== -1) {
                     var loader = document.getElementById("tracking-loader");
                     if (loader) loader.style.display = "flex";
                     initSteamTrainTracker(true);
@@ -1309,34 +1307,36 @@
     }
 
     function formatSteamTrainTime(isoString) {
-        // Parse as local time (no timezone suffix), e.g. "2026-06-05T17:16:42" -> {time: "5:16 PM", date: "6/5"}
+        // Parse as local time (no timezone suffix), e.g. "2026-06-05T17:16:42" -> "5:17 PM"
         var parts = isoString ? isoString.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/) : null;
-        if (!parts) return { time: isoString, date: "" };
-        var month   = parseInt(parts[2], 10);
-        var day     = parseInt(parts[3], 10);
+        if (!parts) return isoString;
         var hours   = parseInt(parts[4], 10);
         var minutes = parseInt(parts[5], 10);
+        var seconds = parseInt(parts[6], 10);
         // Round down — just drop the seconds
+        void seconds;
         var ampm = hours >= 12 ? "PM" : "AM";
         var h12  = hours % 12 || 12;
         var mm   = minutes < 10 ? "0" + minutes : String(minutes);
-        var monthNames = ["Jan.","Feb.","March","April","May","June","July","Aug.","Sep.","Oct.","Nov.","Dec."];
-        var suffix = (day === 1 || day === 21 || day === 31) ? "st" : (day === 2 || day === 22) ? "nd" : (day === 3 || day === 23) ? "rd" : "th";
-        var year    = parseInt(parts[1], 10);
-        return { time: h12 + ":" + mm + " " + ampm, date: monthNames[month - 1] + " " + day + suffix + ", " + year };
+        return h12 + ":" + mm + " " + ampm;
     }
 
     function fetchSteamTrainPosition() {
         var map = window._rgSteamMap;
         if (!map) return;
 
-        var targetUrl = "https://www.up.com/steam-train-tracker-services-1_0/steamtrain/position";
-        var proxyUrl = "https://thingproxy.freeboard.io/fetch/" + targetUrl + "?_t=" + Date.now();
+        var proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent("https://www.up.com/steam-train-tracker-services-1_0/steamtrain/position");
 
         function attemptFetch(retriesLeft) {
             fetch(proxyUrl)
                 .then(function(r) { return r.json(); })
-                .then(function(data) {
+                .then(function(wrapper) {
+                    var data;
+                    try {
+                        data = JSON.parse(wrapper.contents);
+                    } catch (e) {
+                        throw new Error("Proxy returned non-JSON: " + (wrapper.contents || "").slice(0, 80));
+                    }
                     if (!data.latitude || !data.longitude) return;
 
                     // Hide loading overlay on first successful fix
@@ -1364,13 +1364,11 @@
                     var infoEl = document.getElementById("steam-train-info");
                     if (infoEl) {
                         var speedMph = Math.round(data.speed);
-                        var timeParts = formatSteamTrainTime(data.time);
-                        var timeStr  = timeParts.time;
-                        var dateStr  = timeParts.date;
+                        var timeStr  = formatSteamTrainTime(data.time);
                         var newHtml  =
                             "<strong>UP 4014</strong><br>" +
                             "Speed: " + speedMph + " mph<br>" +
-                            "Last update: " + timeStr + " local time<br>on " + dateStr;
+                            "Last update: " + timeStr + " local time";
 
                         // Center map on first load or whenever the time string changes
                         var prevTime = infoEl.getAttribute("data-last-time");
