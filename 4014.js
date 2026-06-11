@@ -1303,7 +1303,7 @@
     }
 
     function formatSteamTrainTime(isoString) {
-        // Parse as local time (no timezone suffix), e.g. "2026-06-05T17:16:42" -> {time: "5:16 PM", date: "June 5th, 2026"}
+        // Parse as CST time, e.g. "2026-06-05T17:16:42" -> {time: "5:16 PM CST", date: "June 5th, 2026"}
         var parts = isoString ? isoString.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/) : null;
         if (!parts) return { time: isoString, date: "" };
         var year    = parseInt(parts[1], 10);
@@ -1366,7 +1366,7 @@
                         var newHtml  =
                             "<strong>UP 4014</strong><br>" +
                             "Speed: " + speedMph + " mph<br>" +
-                            "Last update: " + timeStr + " local time<br>" +
+                            "Last update: " + timeStr + " CST<br>" +
                             "on " + dateStr;
 
                         // Center map on first load or whenever the time string changes
