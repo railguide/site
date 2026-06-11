@@ -1,4 +1,4 @@
-// Generated: 2026-06-10 22h26 PT
+// Generated: 2026-06-10 23h33 PT
 
     "use strict";
 
@@ -467,7 +467,9 @@
                 if (typeof positionScaleBar === "function") positionScaleBar();
                 if (typeof positionDesktopMapList === "function") positionDesktopMapList();
             }
+            var _mapInitialLoadDone = false;
             this.map.once("load", function () {
+                _mapInitialLoadDone = true;
                 runBottomLayout();
                 setTimeout(runBottomLayout, 100);
                 setTimeout(runBottomLayout, 400);
@@ -476,10 +478,12 @@
             });
             this.map.on("style.load", function () {
                 if (typeof positionScaleBarAfterStyleLoad === "function") positionScaleBarAfterStyleLoad();
-                // Re-add tracker layer after style change
-                if (typeof initSteamTrainTracker === "function" && window.location.pathname.indexOf("4014.html") !== -1) {
+                // Re-add tracker layer after style change (not on initial load)
+                if (_mapInitialLoadDone && typeof initSteamTrainTracker === "function" && window.location.pathname.indexOf("4014.html") !== -1) {
                     var loader = document.getElementById("tracking-loader");
-                    if (loader) loader.style.display = "flex";
+                    var infoEl = document.getElementById("steam-train-info");
+                    var alreadyHasCoords = infoEl && infoEl.getAttribute("data-last-time");
+                    if (loader && !alreadyHasCoords) loader.style.display = "flex";
                     initSteamTrainTracker(true);
                 }
             });
@@ -1307,18 +1311,21 @@
     }
 
     function formatSteamTrainTime(isoString) {
-        // Parse as local time (no timezone suffix), e.g. "2026-06-05T17:16:42" -> "5:17 PM"
+        // Parse as local time (no timezone suffix), e.g. "2026-06-05T17:16:42" -> {time: "5:16 PM", date: "6/5"}
         var parts = isoString ? isoString.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/) : null;
-        if (!parts) return isoString;
+        if (!parts) return { time: isoString, date: "" };
+        var month   = parseInt(parts[2], 10);
+        var day     = parseInt(parts[3], 10);
         var hours   = parseInt(parts[4], 10);
         var minutes = parseInt(parts[5], 10);
-        var seconds = parseInt(parts[6], 10);
         // Round down — just drop the seconds
-        void seconds;
         var ampm = hours >= 12 ? "PM" : "AM";
         var h12  = hours % 12 || 12;
         var mm   = minutes < 10 ? "0" + minutes : String(minutes);
-        return h12 + ":" + mm + " " + ampm;
+        var monthNames = ["Jan.","Feb.","March","April","May","June","July","Aug.","Sep.","Oct.","Nov.","Dec."];
+        var suffix = (day === 1 || day === 21 || day === 31) ? "st" : (day === 2 || day === 22) ? "nd" : (day === 3 || day === 23) ? "rd" : "th";
+        var year    = parseInt(parts[1], 10);
+        return { time: h12 + ":" + mm + " " + ampm, date: monthNames[month - 1] + " " + day + suffix + ", " + year };
     }
 
     function fetchSteamTrainPosition() {
@@ -1364,11 +1371,13 @@
                     var infoEl = document.getElementById("steam-train-info");
                     if (infoEl) {
                         var speedMph = Math.round(data.speed);
-                        var timeStr  = formatSteamTrainTime(data.time);
+                        var timeParts = formatSteamTrainTime(data.time);
+                        var timeStr  = timeParts.time;
+                        var dateStr  = timeParts.date;
                         var newHtml  =
                             "<strong>UP 4014</strong><br>" +
                             "Speed: " + speedMph + " mph<br>" +
-                            "Last update: " + timeStr + " local time";
+                            "Last update: " + timeStr + " local time<br>on " + dateStr;
 
                         // Center map on first load or whenever the time string changes
                         var prevTime = infoEl.getAttribute("data-last-time");
