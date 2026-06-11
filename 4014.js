@@ -1,4 +1,4 @@
-// Generated: 2026-06-10 23h33 PT
+// Generated: 2026-06-11 00h27 PT
 
     "use strict";
 
@@ -416,6 +416,7 @@
             this.setStyle = function (layer){
                 base.currentStyleIndex = layer;
                 let layerId = data.map_styles[layer];
+                window._rgStyleSwitchPending = true;
                 base.map.setStyle("mapbox://styles/" + layerId);
             };
         }
@@ -467,9 +468,7 @@
                 if (typeof positionScaleBar === "function") positionScaleBar();
                 if (typeof positionDesktopMapList === "function") positionDesktopMapList();
             }
-            var _mapInitialLoadDone = false;
             this.map.once("load", function () {
-                _mapInitialLoadDone = true;
                 runBottomLayout();
                 setTimeout(runBottomLayout, 100);
                 setTimeout(runBottomLayout, 400);
@@ -478,12 +477,11 @@
             });
             this.map.on("style.load", function () {
                 if (typeof positionScaleBarAfterStyleLoad === "function") positionScaleBarAfterStyleLoad();
-                // Re-add tracker layer after style change (not on initial load)
-                if (_mapInitialLoadDone && typeof initSteamTrainTracker === "function" && window.location.pathname.indexOf("4014.html") !== -1) {
+                // Re-add tracker layer only on genuine user-triggered style switch
+                if (window._rgStyleSwitchPending && typeof initSteamTrainTracker === "function" && window.location.pathname.indexOf("4014.html") !== -1) {
+                    window._rgStyleSwitchPending = false;
                     var loader = document.getElementById("tracking-loader");
-                    var infoEl = document.getElementById("steam-train-info");
-                    var alreadyHasCoords = infoEl && infoEl.getAttribute("data-last-time");
-                    if (loader && !alreadyHasCoords) loader.style.display = "flex";
+                    if (loader) loader.style.display = "flex";
                     initSteamTrainTracker(true);
                 }
             });
@@ -1332,7 +1330,7 @@
         var map = window._rgSteamMap;
         if (!map) return;
 
-        var proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent("https://www.up.com/steam-train-tracker-services-1_0/steamtrain/position");
+        var proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent("https://www.up.com/steam-train-tracker-services-1_0/steamtrain/position") + "&_t=" + Date.now();
 
         function attemptFetch(retriesLeft) {
             fetch(proxyUrl)
