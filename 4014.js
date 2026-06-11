@@ -1,4 +1,4 @@
-// Generated: 2026-06-11 05h36 PT
+// Generated: 2026-06-11 15h22 PT
 
     "use strict";
 
@@ -706,7 +706,7 @@
 
     } 
 
-    let selectedPreConfigData = 1 === window.location.href.split("#").length ? { styleNumber: 0, zoomLevel: 11.52, center: [-78.7, 42.9] } : {
+    let selectedPreConfigData = 1 === window.location.href.split("#").length ? { styleNumber: 0, zoomLevel: 11.52, center: [-85.0401, 41.0718] } : {
             styleNumber: 0,
             zoomLevel: data.zoom,
             center: data.coords[0]
@@ -1303,7 +1303,7 @@
     }
 
     function formatSteamTrainTime(isoString) {
-        // Parse as CST time, e.g. "2026-06-05T17:16:42" -> {time: "5:16 PM CST", date: "June 5th, 2026"}
+        // Parse as CST, e.g. "2026-06-05T17:16:42" -> {time: "5:16 PM", date: "June 5th, 2026"}
         var parts = isoString ? isoString.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/) : null;
         if (!parts) return { time: isoString, date: "" };
         var year    = parseInt(parts[1], 10);
