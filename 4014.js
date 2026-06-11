@@ -1,4 +1,4 @@
-// Generated: 2026-06-06 04h46 PT
+// Generated: 2026-06-10 22h26 PT
 
     "use strict";
 
@@ -477,7 +477,11 @@
             this.map.on("style.load", function () {
                 if (typeof positionScaleBarAfterStyleLoad === "function") positionScaleBarAfterStyleLoad();
                 // Re-add tracker layer after style change
-                if (typeof initSteamTrainTracker === "function") initSteamTrainTracker(true);
+                if (typeof initSteamTrainTracker === "function" && window.location.pathname.indexOf("4014.html") !== -1) {
+                    var loader = document.getElementById("tracking-loader");
+                    if (loader) loader.style.display = "flex";
+                    initSteamTrainTracker(true);
+                }
             });
 
             window.addEventListener("resize", function () {
@@ -706,7 +710,7 @@
 
     } 
 
-    let selectedPreConfigData = 1 === window.location.href.split("#").length ? { styleNumber: 0, zoomLevel: 11.52, center: [-85.0401, 41.0718] } : {
+    let selectedPreConfigData = 1 === window.location.href.split("#").length ? { styleNumber: 0, zoomLevel: 11.52, center: [-98.5795, 39.8283] } : {
             styleNumber: 0,
             zoomLevel: data.zoom,
             center: data.coords[0]
@@ -1334,6 +1338,10 @@
                         throw new Error("Proxy returned non-JSON: " + (wrapper.contents || "").slice(0, 80));
                     }
                     if (!data.latitude || !data.longitude) return;
+
+                    // Hide loading overlay on first successful fix
+                    var loader = document.getElementById("tracking-loader");
+                    if (loader) loader.style.display = "none";
                     var source = map.getSource("steam-train-source");
                     if (!source) return;
                     source.setData({
