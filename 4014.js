@@ -1,4 +1,4 @@
-// Generated: 2026-06-11 00h42 PT
+// Generated: 2026-06-11 01h19 PT
 
     "use strict";
 
@@ -1331,10 +1331,10 @@
         if (!map) return;
 
         var targetUrl = "https://www.up.com/steam-train-tracker-services-1_0/steamtrain/position";
-        var proxyUrl = "https://proxy.cors.sh/" + targetUrl + "?_t=" + Date.now();
+        var proxyUrl = "https://thingproxy.freeboard.io/fetch/" + targetUrl + "?_t=" + Date.now();
 
         function attemptFetch(retriesLeft) {
-            fetch(proxyUrl, { headers: { "x-cors-api-key": "temp_" + Date.now() } })
+            fetch(proxyUrl)
                 .then(function(r) { return r.json(); })
                 .then(function(data) {
                     if (!data.latitude || !data.longitude) return;
