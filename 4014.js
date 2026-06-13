@@ -1,4 +1,4 @@
-// Generated: 2026-06-13 02h33 PT
+// Generated: 2026-06-13 02h53 PT
 
     "use strict";
 
@@ -1298,7 +1298,7 @@
         if (!isStyleReload) {
             if (_steamTrainInterval) clearInterval(_steamTrainInterval);
             fetchSteamTrainPosition();
-            _steamTrainInterval = setInterval(fetchSteamTrainPosition, 5000);
+            _steamTrainInterval = setInterval(fetchSteamTrainPosition, 20000);
         }
     }
 
