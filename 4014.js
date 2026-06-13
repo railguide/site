@@ -1,4 +1,4 @@
-// Generated: 2026-06-11 15h22 PT
+// Generated: 2026-06-13 02h33 PT
 
     "use strict";
 
@@ -706,7 +706,7 @@
 
     } 
 
-    let selectedPreConfigData = 1 === window.location.href.split("#").length ? { styleNumber: 0, zoomLevel: 11.52, center: [-75.9053, 42.1036] } : {
+    let selectedPreConfigData = 1 === window.location.href.split("#").length ? { styleNumber: 0, zoomLevel: 11.52, center: [-85.0401, 41.0718] } : {
             styleNumber: 0,
             zoomLevel: data.zoom,
             center: data.coords[0]
@@ -1325,18 +1325,12 @@
         var map = window._rgSteamMap;
         if (!map) return;
 
-        var proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent("https://www.up.com/steam-train-tracker-services-1_0/steamtrain/position");
+        var proxyUrl = "https://throbbing-silence-c4a4.railguidemaps.workers.dev/";
 
         function attemptFetch(retriesLeft) {
             fetch(proxyUrl)
                 .then(function(r) { return r.json(); })
-                .then(function(wrapper) {
-                    var data;
-                    try {
-                        data = JSON.parse(wrapper.contents);
-                    } catch (e) {
-                        throw new Error("Proxy returned non-JSON: " + (wrapper.contents || "").slice(0, 80));
-                    }
+                .then(function(data) {
                     if (!data.latitude || !data.longitude) return;
                     var source = map.getSource("steam-train-source");
                     if (!source) return;
