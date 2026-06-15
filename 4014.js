@@ -1,4 +1,4 @@
-// Generated: 2026-06-14 23h29 PT
+// Generated: 2026-06-14 23h51 PT
 
     "use strict";
 
@@ -1347,9 +1347,32 @@
         return { time: timeStr, date: dateStr, tz: tzAbbr };
     }
 
+    // 9:00 AM EDT on July 1, 2026 = 13:00 UTC
+    var TRACKING_START_UTC = Date.UTC(2026, 6, 1, 13, 0, 0);
+
     function fetchSteamTrainPosition() {
         var map = window._rgSteamMap;
         if (!map) return;
+
+        // Before tracking starts, show static message and do nothing
+        if (Date.now() < TRACKING_START_UTC) {
+            var infoEl = document.getElementById("steam-train-info");
+            if (infoEl) {
+                infoEl.innerHTML =
+                    "<strong>UP 4014</strong><br>" +
+                    "<a href='https://www.up.com/about-us/history/steam/schedule' target='_blank' style='color:#fff;text-decoration:underline;'>Schedule</a><br>" +
+                    "Next update: July 1, 2026";
+                // Position over the fixed starting location
+                var startPt = map.project([-75.6717, 41.4085]);
+                infoEl.style.left = startPt.x + "px";
+                infoEl.style.top  = startPt.y + "px";
+                infoEl.style.display = "block";
+            }
+            // Hide loader since we're intentionally not fetching yet
+            var loader = document.getElementById("tracking-loader");
+            if (loader) loader.style.display = "none";
+            return;
+        }
 
         var proxyUrl = "https://throbbing-silence-c4a4.railguidemaps.workers.dev/";
 
