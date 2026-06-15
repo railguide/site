@@ -1,4 +1,4 @@
-// Generated: 2026-06-13 02h53 PT
+// Generated: 2026-06-14 23h29 PT
 
     "use strict";
 
@@ -1286,7 +1286,7 @@
                 "line-height:1.5",
                 "padding:6px 10px",
                 "border-radius:6px",
-                "pointer-events:none",
+                "pointer-events:auto",
                 "white-space:nowrap",
                 "transform:translate(-50%, calc(-100% - 16px))",
                 "display:none"
@@ -1298,27 +1298,53 @@
         if (!isStyleReload) {
             if (_steamTrainInterval) clearInterval(_steamTrainInterval);
             fetchSteamTrainPosition();
-            _steamTrainInterval = setInterval(fetchSteamTrainPosition, 20000);
+            _steamTrainInterval = setInterval(fetchSteamTrainPosition, 60000);
         }
     }
 
     function formatSteamTrainTime(isoString) {
-        // Parse as CT, e.g. "2026-06-05T17:16:42" -> {time: "5:16 PM", date: "June 5th, 2026"}
-        var parts = isoString ? isoString.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/) : null;
-        if (!parts) return { time: isoString, date: "" };
-        var year    = parseInt(parts[1], 10);
-        var month   = parseInt(parts[2], 10);
-        var day     = parseInt(parts[3], 10);
-        var hours   = parseInt(parts[4], 10);
-        var minutes = parseInt(parts[5], 10);
-        // Round down — just drop the seconds
-        var ampm = hours >= 12 ? "PM" : "AM";
-        var h12  = hours % 12 || 12;
-        var mm   = minutes < 10 ? "0" + minutes : String(minutes);
-        // Months longer than 5 letters get standard abbreviations; others spelled out
+        // API returns time in US Central time (America/Chicago), convert to user's local timezone
+        if (!isoString) return { time: "", date: "", tz: "" };
+
+        // Find the UTC equivalent by asking the browser what Chicago's offset is at this moment.
+        // We treat the ISO string as Chicago local time, then back-calculate UTC.
+        var naive = new Date(isoString + "Z"); // parse as UTC first (wrong clock, right structure)
+        var chicagoStr = naive.toLocaleString("en-US", {
+            timeZone: "America/Chicago",
+            hour12: false,
+            year: "numeric", month: "2-digit", day: "2-digit",
+            hour: "2-digit", minute: "2-digit", second: "2-digit"
+        });
+        // chicagoStr is like "06/05/2026, 12:16:42"
+        var p = chicagoStr.match(/(\d+)\/(\d+)\/(\d+),\s*(\d+):(\d+):(\d+)/);
+        var chicagoHour = p ? parseInt(p[4], 10) : 0;
+        var apiHour = parseInt(isoString.substr(11, 2), 10);
+        // Offset difference tells us how far off our naive parse was
+        var diffHours = apiHour - chicagoHour;
+        var utcMs = naive.getTime() + diffHours * 3600000;
+        var localDate = new Date(utcMs);
+
+        // Format time in user's local timezone
+        var timeStr = localDate.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true
+        });
+
+        // Get timezone abbreviation (e.g. "PDT", "EDT", "MDT")
+        var tzAbbr = localDate.toLocaleTimeString("en-US", { timeZoneName: "short" }).split(" ").pop();
+
+        // Format date in user's local timezone
         var monthNames = ["Jan.","Feb.","March","April","May","June","July","Aug.","Sep.","Oct.","Nov.","Dec."];
-        var suffix = (day === 1 || day === 21 || day === 31) ? "st" : (day === 2 || day === 22) ? "nd" : (day === 3 || day === 23) ? "rd" : "th";
-        return { time: h12 + ":" + mm + " " + ampm, date: monthNames[month - 1] + " " + day + suffix + ", " + year };
+        var localMonth = localDate.getMonth() + 1;
+        var localDay   = localDate.getDate();
+        var localYear  = localDate.getFullYear();
+        var suffix = (localDay === 1 || localDay === 21 || localDay === 31) ? "st" :
+                     (localDay === 2 || localDay === 22) ? "nd" :
+                     (localDay === 3 || localDay === 23) ? "rd" : "th";
+        var dateStr = monthNames[localMonth - 1] + " " + localDay + suffix + ", " + localYear;
+
+        return { time: timeStr, date: dateStr, tz: tzAbbr };
     }
 
     function fetchSteamTrainPosition() {
@@ -1359,8 +1385,9 @@
                         var dateStr  = timeParts.date;
                         var newHtml  =
                             "<strong>UP 4014</strong><br>" +
+                            "<a href='https://www.up.com/about-us/history/steam/schedule' target='_blank' style='color:#fff;text-decoration:underline;'>Schedule</a><br>" +
                             "Speed: " + speedMph + " mph<br>" +
-                            "Last update: " + timeStr + " CT<br>" +
+                            "Last update: " + timeStr + " " + timeParts.tz + "<br>" +
                             "on " + dateStr;
 
                         // Center map on first load or whenever the time string changes
