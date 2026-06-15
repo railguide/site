@@ -706,7 +706,7 @@
 
     } 
 
-    let selectedPreConfigData = 1 === window.location.href.split("#").length ? { styleNumber: 0, zoomLevel: 11.52, center: [-76.38, 42.0] } : {
+    let selectedPreConfigData = 1 === window.location.href.split("#").length ? { styleNumber: 0, zoomLevel: 11.52, center: [-75.6717, 41.4085] } : {
             styleNumber: 0,
             zoomLevel: data.zoom,
             center: data.coords[0]
