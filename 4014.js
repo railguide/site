@@ -1,4 +1,4 @@
-// Generated: 2026-06-15 00h03 PT
+// Generated: 2026-06-15 00h44 PT
 
     "use strict";
 
@@ -26,7 +26,7 @@
             "m729/cln2mxute003y01pweq5b8k0g",
             "m729/ckk6jq9o70rk317o232u6loug",
             "m729/cmotlmtja000301spcuy2dzmg",
-            "mapbox/satellite-v9",
+            "m729/ck7tkj2gt1z241ipjf8fgm5ab",
         ]
         // rg fix end
     },
@@ -1389,6 +1389,7 @@
                         var p = map.project(FIXED_COORDS);
                         infoEl.style.left = p.x + "px";
                         infoEl.style.top  = p.y + "px";
+
                     };
                     map.on("move", map._steamInfoMoveHandler);
                 }
