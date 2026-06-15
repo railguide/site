@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- // Generated: 2026-06-15 01h12 PT -->
 <html lang="en">
     <head>
         <script data-cfasync="false" src="https://cmp.gatekeeperconsent.com/min.js"></script>
@@ -128,7 +129,7 @@
             <li style-id="5" onclick="currentActiveMap.setStyle(5)">Points of Interest</li>
             <li style-id="6" onclick="currentActiveMap.setStyle(6)">Abandoned</li>
             <li style-id="7" onclick="currentActiveMap.setStyle(7)">Traffic</li>
-            <li style-id="8" onclick="currentActiveMap.setStyle(8)">Satellite</li>
+            <li style-id="8" onclick="window.open('https://www.google.com/maps/@' + currentActiveMap.map.getCenter().lat.toFixed(6) + ',' + currentActiveMap.map.getCenter().lng.toFixed(6) + ',' + Math.round(currentActiveMap.map.getZoom()) + 'z/data=!3m1!1e3', '_blank')">Satellite</li>
         </ul>
         <!-- rg fix end -->
         <div class="main-ctrl">
@@ -195,7 +196,7 @@
                         <li id="current" style-id="4" onclick="currentActiveMap.setStyle(4)">Early Owners</li>
                         <li id="current" style-id="5" onclick="currentActiveMap.setStyle(5)">Points of Interest</li>
                         <li id="current" style-id="6" onclick="currentActiveMap.setStyle(6)">Abandoned</li>
-                        <li id="current" style-id="7" onclick="currentActiveMap.setStyle(7)">Satellite</li>
+                        <li id="current" style-id="7" onclick="window.open('https://www.google.com/maps/@' + currentActiveMap.map.getCenter().lat.toFixed(6) + ',' + currentActiveMap.map.getCenter().lng.toFixed(6) + ',' + Math.round(currentActiveMap.map.getZoom()) + 'z/data=!3m1!1e3', '_blank')">Satellite</li>
                     </ul>
                 </div>
                 <div id="guide">
