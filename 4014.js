@@ -250,7 +250,7 @@
         return geocodes;
     };
 
-    window.mapboxgl.accessToken = "pk.eyJ1IjoibTcyOSIsImEiOiJjbDVxYW5sY2ExdmJvM2tsdjV4aDh2dmlsIn0.GchUU72Y5qS9UIITZSjnzA";
+    window.mapboxgl.accessToken = "pk.eyJ1IjoibTcyOSIsImEiOiJjbXFoNjJtajMwODJuMnJvZHJ0a3N4MWd4In0.N2rPinfQONzkySZk-TZh6Q";
 
     class handleMapPrcoessCreation {
         constructor ( options ) {
