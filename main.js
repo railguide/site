@@ -96,7 +96,7 @@
      *   hoverFieldStyles: optional object mapping field key to CSS class for hover tooltip (e.g. rg_name: "hover-field-title").
      *   linkDisplayText: optional object mapping field key to alternate link text (e.g. sub_title: "Open article") when the field value is a URL.
      */
-    var HOVER_POPUP_CONFIG = {
+    /*var HOVER_POPUP_CONFIG = {
         0: { hoverFields: ["rr_full", "rg_name"], popupFields: ["rr_full", "rg_name", "sub_title", "rg_desc"], popupFieldStyles: { rg_name: "popup-field-title", sub_title: "popup-field-sub" }, hoverFieldStyles: { rr_full: "hover-field-title" } },
         1: { hoverFields: ["rg_name", "sub_title"], popupFields: ["rg_name", "sub_title", "rg_desc"], popupFieldStyles: { rg_name: "popup-field-title", sub_title: "popup-field-sub" }, hoverFieldStyles: { rg_name: "hover-field-title", sub_title: "hover-field-sub" }, linkDisplayText: { rg_desc: "Open article" } },
         2: { hoverFields: ["classic_full", "rg_name", "sub_title", "rg_desc"], popupFields: ["classic_full", "rg_name", "sub_title", "rg_desc"], popupFieldStyles: { classic_full: "popup-field-title", sub_title: "popup-field-sub" }, hoverFieldStyles: { classic_full: "hover-field-title", sub_title: "hover-field-sub" } },
@@ -108,7 +108,7 @@
     };
     var DEFAULT_HOVER_MAX_CHARS = 0;
     var DEFAULT_HOVER_MAX_LINES = 0;
-    var DEFAULT_POPUP_MAX_CHARS_PER_FIELD = 0;
+    var DEFAULT_POPUP_MAX_CHARS_PER_FIELD = 0;*/
 
     function buildPopupHtml ( properties, options ) {
         if (!properties) return "";
