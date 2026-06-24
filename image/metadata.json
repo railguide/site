@@ -1,0 +1,8 @@
+{
+  "name": "Bounding Box Drawer",
+  "description": "An interactive map tool to draw, resize, and drag-and-drop bounding boxes with coordinate editing and GeoJSON export.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
