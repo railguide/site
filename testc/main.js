@@ -26,8 +26,7 @@
             "m729/cln2mxute003y01pweq5b8k0g",
             "m729/ckk6jq9o70rk317o232u6loug",
             "m729/cmotlmtja000301spcuy2dzmg",
-            "m729/ck7tkj2gt1z241ipjf8fgm5ab",
-            "mapbox/satellite-v9"
+            "mapbox/satellite-v9",
         ]
         // rg fix end
     },

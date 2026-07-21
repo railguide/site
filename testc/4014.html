@@ -1,4 +1,4 @@
-<!-- Generated: 2026-07-18 15h22 PDT -->
+<!-- Generated: 2026-07-20 16h47 PDT -->
 <!doctype html>
 <html lang="en">
     <head>
@@ -129,7 +129,8 @@
             <li style-id="6" onclick="currentActiveMap.setStyle(6)">Abandoned</li>
             <li style-id="7" onclick="currentActiveMap.setStyle(7)">Traffic</li>
             <li style-id="8" onclick="currentActiveMap.setStyle(8)">Satellite</li>
-            <li style-id="9" onclick="window.open('https://www.google.com/maps/@' + currentActiveMap.map.getCenter().lat.toFixed(6) + ',' + currentActiveMap.map.getCenter().lng.toFixed(6) + ',' + Math.round(currentActiveMap.map.getZoom()) + 'z/data=!3m1!1e3', '_blank')">Google Maps</li>
+            <li style-id="9" onclick="window.open('https://www.google.com/maps/@' + currentActiveMap.map.getCenter().lat.toFixed(6) + ',' + currentActiveMap.map.getCenter().lng.toFixed(6) + ',' + Math.round((156543.03392 * Math.cos(currentActiveMap.map.getCenter().lat * Math.PI / 180)) / Math.pow(2, currentActiveMap.map.getZoom()) * 420) + 'm/data=!3m1!1e3', '_blank')">Google Maps</li>
+            <li style-id="9" onclick="window.open('https://geohack.toolforge.org/geohack.php?params=' + Math.abs(currentActiveMap.map.getCenter().lat).toFixed(6) + '_' + (currentActiveMap.map.getCenter().lat >= 0 ? 'N' : 'S') + '_' + Math.abs(currentActiveMap.map.getCenter().lng).toFixed(6) + '_' + (currentActiveMap.map.getCenter().lng >= 0 ? 'E' : 'W') + '_region:US', '_blank')">GeoHack</li>
         </ul>
         <!-- rg fix end -->
         <div class="main-ctrl">
@@ -197,7 +198,7 @@
                         <li id="current" style-id="5" onclick="currentActiveMap.setStyle(5)">Points of Interest</li>
                         <li id="current" style-id="6" onclick="currentActiveMap.setStyle(6)">Abandoned</li>
                         <li id="current" style-id="8" onclick="currentActiveMap.setStyle(8)">Satellite</li>
-                        <li id="current" style-id="9" onclick="window.open('https://www.google.com/maps/@' + currentActiveMap.map.getCenter().lat.toFixed(6) + ',' + currentActiveMap.map.getCenter().lng.toFixed(6) + ',' + Math.round(currentActiveMap.map.getZoom()) + 'z/data=!3m1!1e3', '_blank')">Google Maps</li>
+                        <li id="current" style-id="9" onclick="window.open('https://www.google.com/maps/@' + currentActiveMap.map.getCenter().lat.toFixed(6) + ',' + currentActiveMap.map.getCenter().lng.toFixed(6) + ',' + Math.round((156543.03392 * Math.cos(currentActiveMap.map.getCenter().lat * Math.PI / 180)) / Math.pow(2, currentActiveMap.map.getZoom()) * 420) + 'm/data=!3m1!1e3', '_blank')">Google Maps</li>
                     </ul>
                 </div>
                 <div id="guide">

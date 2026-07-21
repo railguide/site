@@ -1,4 +1,4 @@
-// Generated: 2026-07-18 15h22 PDT
+// Generated: 2026-07-20 22h37 PDT
 
     "use strict";
 
@@ -26,7 +26,6 @@
             "m729/cln2mxute003y01pweq5b8k0g",
             "m729/ckk6jq9o70rk317o232u6loug",
             "m729/cmotlmtja000301spcuy2dzmg",
-            "m729/ck7tkj2gt1z241ipjf8fgm5ab",
             "mapbox/satellite-v9",
         ]
         // rg fix end
@@ -707,7 +706,9 @@
 
     } 
 
-    let selectedPreConfigData = 1 === window.location.href.split("#").length ? { styleNumber: 0, zoomLevel: 11.52, center: [-75.6717, 41.4085] } : {
+    var STEAM_DEFAULT_ZOOM = 11.52;   // Default zoom for steam train tracking - change this value to adjust
+    var STEAM_DEFAULT_CENTER = [-75.6717, 41.4085]; // Default center for steam train tracking - change this value to adjust
+    let selectedPreConfigData = 1 === window.location.href.split("#").length ? { styleNumber: 0, zoomLevel: STEAM_DEFAULT_ZOOM, center: STEAM_DEFAULT_CENTER } : {
             styleNumber: 0,
             zoomLevel: data.zoom,
             center: data.coords[0]
@@ -1357,7 +1358,7 @@
 
         // Before tracking starts, show static message and fixed location
         if (Date.now() < TRACKING_START_UTC) {
-            var FIXED_COORDS = [-75.6717, 41.4085];
+            var FIXED_COORDS = STEAM_DEFAULT_CENTER;
 
             // Put the shield icon at the fixed location
             var fixedSource = map.getSource("steam-train-source");
@@ -1444,7 +1445,9 @@
                         // Center map on first load or whenever the time string changes
                         var prevTime = infoEl.getAttribute("data-last-time");
                         if (!prevTime || prevTime !== timeStr) {
-                            map.flyTo({ center: [data.longitude, data.latitude], zoom: 11.52 });
+                            var flyToOptions = { center: [data.longitude, data.latitude] };
+                            if (map.getZoom() < STEAM_DEFAULT_ZOOM) { flyToOptions.zoom = STEAM_DEFAULT_ZOOM; }
+                            map.flyTo(flyToOptions);
                             infoEl.setAttribute("data-last-time", timeStr);
                         }
 
